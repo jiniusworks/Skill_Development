@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EV MechPrep — Mechanical & EV Interview Prep</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #020617;
+      color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* Range slider styling for engineering labs */
+    input[type="range"].ev-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type="range"].ev-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #06b6d4;
+      border: 2px solid #ecfeff;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.55);
+    }
+    input[type="range"].ev-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #06b6d4;
+      border: 2px solid #ecfeff;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.55);
+    }
+    @keyframes pulseUrgent {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .timer-urgent {
+      animation: pulseUrgent 0.85s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+  <!-- App Shell Container -->
+  <div id="app-shell" class="min-h-screen w-full max-w-2xl mx-auto flex flex-col bg-slate-950 border-x border-slate-800/70 shadow-2xl">
+
+    <!-- Top Status & XP Header -->
+    <header class="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+      <div class="flex items-center justify-between gap-2">
+        <button type="button" onclick="navigate('home')" class="flex items-center gap-2.5 text-left group focus:outline-none">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-base font-extrabold tracking-tight text-white">EV MechPrep</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">8 Mods</span>
+            </div>
+            <p id="hdr-rank" class="text-[11px] font-medium text-emerald-400">Rank: Fresh Mech Grad</p>
+          </div>
+        </button>
+
+        <!-- XP, Streak & Readiness Pills -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div class="px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1" title="Current Streak">
+            <span>🔥</span>
+            <span id="hdr-streak">0</span>
+          </div>
+          <div class="px-2.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold" id="hdr-xp">0 XP</div>
+          <div class="hidden sm:flex flex-col items-end min-w-[74px]">
+            <span class="text-[10px] text-slate-400 font-semibold">Readiness <strong id="hdr-readiness" class="text-emerald-400">0%</strong></span>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+              <div id="hdr-readiness-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all duration-300" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Global Error & Recovery Banner (Hidden unless runtime/promise error occurs) -->
+    <div id="global-error-banner" class="hidden mx-4 mt-3 p-3.5 rounded-2xl bg-rose-950/90 border border-rose-500/60 text-rose-100 shadow-xl">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs font-extrabold uppercase tracking-wider text-rose-300">Runtime Guard Active</p>
+          <p id="global-error-text" class="text-xs text-rose-100 mt-0.5 break-words">An unexpected error was safely contained.</p>
+        </div>
+        <button type="button" onclick="recoverFromError()" class="px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold text-xs shrink-0 transition-colors">
+          Recover
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Content Area -->
+    <main id="main-content" class="flex-1 px-4 pt-4 pb-24 space-y-4"></main>
+
+    <!-- Bottom Navigation Bar (Home, Modules, Labs, Scenarios, Mock) -->
+    <nav aria-label="Primary Navigation" class="fixed bottom-0 inset-x-0 z-40 max-w-2xl mx-auto bg-slate-950/95 backdrop-blur-md border-t border-slate-800/90 px-2 py-1.5">
+      <div class="grid grid-cols-5 gap-1">
+        <button type="button" id="nav-home" onclick="navigate('home')" class="nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-cyan-400 bg-cyan-500/10 transition-all">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"></path>
+          </svg>
+          <span class="text-[10px] font-bold">Home</span>
+        </button>
+
+        <button type="button" id="nav-modules" onclick="navigate('modules')" class="nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-400 hover:text-white transition-all">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+          </svg>
+          <span class="text-[10px] font-bold">Modules</span>
+        </button>
+
+        <button type="button" id="nav-labs" onclick="navigate('labs')" class="nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-400 hover:text-white transition-all">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          <span class="text-[10px] font-bold">Labs</span>
+        </button>
+
+        <button type="button" id="nav-scenarios" onclick="startScenarioDrill()" class="nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-400 hover:text-white transition-all">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"></path>
+          </svg>
+          <span class="text-[10px] font-bold">Scenarios</span>
+        </button>
+
+        <button type="button" id="nav-mock" onclick="startBalancedMock()" class="nav-tab flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-400 hover:text-white transition-all">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-[10px] font-bold">Mock</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Non-blocking In-App Modal (Zero window.alert / window.confirm usage) -->
+    <div id="inapp-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-2xl bg-slate-900 border border-slate-700 p-5 shadow-2xl space-y-4">
+        <div>
+          <h3 id="modal-title" class="text-base font-extrabold text-white">Confirm Action</h3>
+          <p id="modal-message" class="text-xs text-slate-300 mt-1.5 leading-relaxed"></p>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" id="modal-cancel-btn" onclick="closeModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors">
+            Cancel
+          </button>
+          <button type="button" id="modal-confirm-btn" class="px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-slate-950 text-xs font-extrabold transition-colors">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. SAFE STORAGE & RUNTIME GUARD LAYER (IFRAME / SANDBOX RESILIENT)
+    // =========================================================================
+    const STORAGE_KEY = 'ev_mechprep_v3_state';
+    const memoryStorageMap = new Map();
+
+    const DEFAULT_PERSISTED_STATE = {
+      xp: 0,
+      streak: 0,
+      bestStreak: 0,
+      completedNotes: [],
+      solvedQuestions: {} // { [questionId]: { correct: boolean, attempts: number } }
+    };
+
+    function safeGetStorageItem(key) {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          return window.localStorage.getItem(key);
+        }
+      } catch (_err) {
+        // Fallback to memory map when storage is blocked
+      }
+      return memoryStorageMap.has(key) ? memoryStorageMap.get(key) : null;
+    }
+
+    function safeSetStorageItem(key, value) {
+      memoryStorageMap.set(key, String(value));
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(key, String(value));
+        }
+      } catch (_err) {
+        // Keep in-memory state working smoothly
+      }
+    }
+
+    function safeRemoveStorageItem(key) {
+      memoryStorageMap.delete(key);
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.removeItem(key);
+        }
+      } catch (_err) {
+        // Ignore storage removal restriction
+      }
+    }
+
+    function normalizeState(raw) {
+      const clean = {
+        xp: 0,
+        streak: 0,
+        bestStreak: 0,
+        completedNotes: [],
+        solvedQuestions: {}
+      };
+      if (!raw || typeof raw !== 'object') return clean;
+      clean.xp = Number.isFinite(Number(raw.xp)) && Number(raw.xp) >= 0 ? Math.floor(Number(raw.xp)) : 0;
+      clean.streak = Number.isFinite(Number(raw.streak)) && Number(raw.streak) >= 0 ? Math.floor(Number(raw.streak)) : 0;
+      clean.bestStreak = Number.isFinite(Number(raw.bestStreak)) && Number(raw.bestStreak) >= 0 ? Math.floor(Number(raw.bestStreak)) : 0;
+      if (Array.isArray(raw.completedNotes)) {
+        clean.completedNotes = raw.completedNotes.filter(item => typeof item === 'string');
+      }
+      if (raw.solvedQuestions && typeof raw.solvedQuestions === 'object') {
+        Object.entries(raw.solvedQuestions).forEach(([qId, entry]) => {
+          if (entry && typeof entry === 'object') {
+            clean.solvedQuestions[qId] = {
+              correct: Boolean(entry.correct),
+              attempts: Number.isFinite(Number(entry.attempts)) && Number(entry.attempts) > 0 ? Math.floor(Number(entry.attempts)) : 1
+            };
+          }
+        });
+      }
+      return clean;
+    }
+
+    let appState = normalizeState(DEFAULT_PERSISTED_STATE);
+
+    function loadPersistedState() {
+      try {
+        const rawText = safeGetStorageItem(STORAGE_KEY);
+        if (!rawText) return normalizeState(DEFAULT_PERSISTED_STATE);
+        return normalizeState(JSON.parse(rawText));
+      } catch (_err) {
+        return normalizeState(DEFAULT_PERSISTED_STATE);
+      }
+    }
+
+    function persistState() {
+      appState = normalizeState(appState);
+      safeSetStorageItem(STORAGE_KEY, JSON.stringify(appState));
+      updateTopHeader();
+    }
+
+    function showGlobalError(message) {
+      try {
+        const banner = document.getElementById('global-error-banner');
+        const msgEl = document.getElementById('global-error-text');
+        if (msgEl) msgEl.textContent = message || 'A rendering issue was caught and contained.';
+        if (banner) banner.classList.remove('hidden');
+      } catch (_err) {
+        // Ignore if DOM unavailable
+      }
+    }
+
+    function recoverFromError() {
+      try {
+        const banner = document.getElementById('global-error-banner');
+        if (banner) banner.classList.add('hidden');
+        stopDrillTimer();
+        updateTopHeader();
+        navigate('home');
+      } catch (_err) {
+        // Ignore recovery error
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('error', function (event) {
+        const detail = event && event.message ? event.message : 'Unexpected runtime error caught.';
+        showGlobalError(detail);
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        const reason = event && event.reason ? (event.reason.message || String(event.reason)) : 'Unhandled promise rejection caught.';
+        showGlobalError(reason);
+      });
+    }
+
+    // =========================================================================
+    // 2. VERIFIED EXTERNAL LEARNING LINKS & 8 COMPREHENSIVE MODULES DATA
+    // =========================================================================
+    const VERIFIED_LINKS = {
+      nptelFundamentals: {
+        title: 'NPTEL (IIT Madras): Fundamentals of Electric Vehicles',
+        url: 'https://nptel.ac.in/courses/108106170',
+        badge: 'NPTEL IIT'
+      },
+      nptelComponents: {
+        title: 'NPTEL (IIT Roorkee): EV Components & Charging',
+        url: 'https://nptel.ac.in/courses/108107002',
+        badge: 'NPTEL IIT'
+      },
+      mathworksAcademia: {
+        title: 'MathWorks: EV Learning Resources & Simulation',
+        url: 'https://www.mathworks.com/academia/student-competitions/resources/electric-vehicles.html',
+        badge: 'MathWorks'
+      },
+      mathworksSolutions: {
+        title: 'MathWorks: Electric Vehicle Solutions',
+        url: 'https://www.mathworks.com/solutions/automotive/electric-vehicle.html',
+        badge: 'MathWorks'
+      },
+      batteryUnivGuide: {
+        title: 'Battery University: Lithium-ion Guide',
+        url: 'https://www.batteryuniversity.com/article/lithium-ion/',
+        badge: 'Battery U'
+      },
+      batteryUnivSafety: {
+        title: 'Battery University: Understanding Lithium-ion Chemistry & Safety',
+        url: 'https://www.batteryuniversity.com/article/understanding-lithium-ion/',
+        badge: 'Battery U'
+      },
+      saeStandards: {
+        title: 'SAE International: Mobility Engineering & Standards',
+        url: 'https://www.sae.org/',
+        badge: 'SAE'
+      },
+      uneceRegs: {
+        title: 'UNECE: Vehicle Regulations & Safety Standards',
+        url: 'https://unece.org/transport/vehicle-regulations',
+        badge: 'UNECE'
+      }
+    };
+
+    const MODULES = [
+      {
+        id: 'som-fatigue-fea',
+        num: '01',
+        category: 'core',
+        categoryLabel: 'Core Mechanical',
+        title: 'Strength of Materials, Fatigue & Structural FEA',
+        shortTitle: 'SOM, Fatigue & FEA',
+        subtitle: 'Von Mises stress, S-N/strain-life fatigue, bolted preload & FEA boundary conditions',
+        labId: 'lab-som',
+        overview: 'EV battery enclosures, motor mounts, and subframes experience combined static crush loads, thermal expansion stresses, and high-frequency road vibration. Mechanical engineers must pair yield/fatigue criteria with realistic FEA constraints and joint stiffness ratios.',
+        equations: [
+          { label: 'Von Mises Yield', formula: 'σ_v = √[½((σ₁−σ₂)² + (σ₂−σ₃)² + (σ₃−σ₁)² + 6(τ₁₂² + τ₂₃² + τ₃₁²))]' },
+          { label: 'Miner’s Fatigue Rule', formula: 'D = Σ (n_i / N_i)  (Design target typically D < 0.3–0.5 for safety-critical parts)' },
+          { label: 'Bolt Joint Stiffness', formula: 'C = k_b / (k_b + k_m),   F_b = C · F_ext + F_preload' }
+        ],
+        interviewerTip: 'When asked how you validate an FEA model, always state mesh convergence checks, constraint/contact realism (avoiding over-constrained rigid links that create artificial stress spikes), and correlation against physical strain-gauge or modal tests.',
+        crossBridge: 'Battery pack structural deflection (>2–3 mm under load) can stress busbars, crack potting/TIM layers, or pinch cell tabs—requiring mechanical stiffness targets negotiated directly with Electrical/BMS and Thermal teams.',
+        links: [VERIFIED_LINKS.saeStandards, VERIFIED_LINKS.mathworksSolutions, VERIFIED_LINKS.nptelFundamentals],
+        questions: [
+          {
+            id: 'q-som-1',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'In structural FEA of an aluminum battery tray under vertical road bump load, why should you check mesh convergence before signing off on peak stress?',
+            options: [
+              'Fine meshes automatically eliminate stress concentrations at sharp internal corners',
+              'Coarse meshes can under-predict gradients while sharp re-entrant corners cause mesh-dependent singularities',
+              'Mesh density only affects thermal conductivity, not von Mises stress',
+              'Increasing element count reduces allowable yield strength of 6061-T6 aluminum'
+            ],
+            correctIndex: 1,
+            explanation: 'Coarse elements can smooth out steep stress gradients, whereas true geometric re-entrant corners create theoretical singularities unless modeled with fillet radii and evaluated via converged mesh behavior or local strain/notch methods.'
+          },
+          {
+            id: 'q-som-2',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'A bracket undergoes reversed bending with alternating stress σ_a and mean stress σ_m. Which effect directly shortens fatigue life for a given alternating amplitude?',
+            options: [
+              'Tensile mean stress reduces allowable alternating stress amplitude',
+              'Compressive mean stress always makes fatigue life zero',
+              'Mean stress has zero effect on ductile metals above room temperature',
+              'Higher frequency always doubles endurance limit in steel'
+            ],
+            correctIndex: 0,
+            explanation: 'A tensile mean stress shifts the stress cycle upward (Goodman/Gerber relations), reducing the allowable alternating stress amplitude for a target fatigue life.'
+          },
+          {
+            id: 'q-som-3',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'Why is a metallic compression limiter (bushing/sleeve) commonly placed inside a polymer mounting flange bolted to a metal housing?',
+            options: [
+              'To increase electrical conductivity across the flange',
+              'To prevent polymer creep/relaxation from losing bolt clamping preload over time and temperature',
+              'To lower the natural frequency of the fastener',
+              'To replace thread locking compound on aluminum bolts'
+            ],
+            correctIndex: 1,
+            explanation: 'Polymers creep under sustained compressive clamping load and elevated temperatures. A rigid metal limiter defines exact crush height and preserves clamping preload.'
+          },
+          {
+            id: 'q-som-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: During a 200,000 km accelerated vibration schedule, a rigid copper busbar bolted between two battery modules cracks near its lug root even though peak static stress is well below yield. What is the most likely root cause?',
+            options: [
+              'High-cycle vibrational fatigue amplified by differential displacement between modules and a sharp bend radius',
+              'Pure hydrostatic pressure inside the copper conductor',
+              'A drop in ambient air density at highway speed',
+              'Excessive corrosion resistance of oxygen-free copper'
+            ],
+            correctIndex: 0,
+            explanation: 'Relative vibration between modules imposes cyclic bending on the busbar. Tight bend radii and lack of strain relief/compliance cause cyclic plastic strain accumulation and fatigue cracking.'
+          },
+          {
+            id: 'q-som-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A structural engineer stiffens a battery enclosure cross-member by 40%, reducing vertical deflection by half, but BMS engineers report higher cell-to-cell compression variation during thermal expansion. What trade-off occurred?',
+            options: [
+              'Higher structural stiffness restricts free thermal expansion, raising reaction forces on constrained cells',
+              'Stiffer cross-members reduce the Young’s modulus of lithium cells',
+              'Thermal expansion disappears when structural stiffness exceeds 50 kN/mm',
+              'BMS voltage sensors automatically cancel mechanical clamping forces'
+            ],
+            correctIndex: 0,
+            explanation: 'When a stiffer structure constrains thermal growth (ΔL = α·L·ΔT), thermal strain converts into higher mechanical contact/reaction stress across the cell stack.'
+          }
+        ]
+      },
+      {
+        id: 'heat-thermo-fluids',
+        num: '02',
+        category: 'core',
+        categoryLabel: 'Core Mechanical',
+        title: 'Heat Transfer, Thermodynamics & Fluid Mechanics',
+        shortTitle: 'Heat, Thermo & Fluids',
+        subtitle: 'Conduction resistance networks, Reynolds/Nusselt convection, pressure drop & heat generation',
+        labId: 'lab-heat',
+        overview: 'Thermal reliability governs EV fast-charging speed, cell longevity, and inverter power limits. Mechanical engineers balance conductive stack resistance, convective heat transfer coefficients, and fluid pumping power (ΔP · Q) across cooling loops.',
+        equations: [
+          { label: '1D Conduction & Contact', formula: 'R_th = t / (k · A) + R_contact,   Q̇ = ΔT / R_th_total' },
+          { label: 'Convection & Energy Balance', formula: 'Q̇_conv = h · A_s · (T_s − T_f) = ṁ · c_p · (T_out − T_in)' },
+          { label: 'Darcy–Weisbach Head Loss', formula: 'ΔP = f · (L / D_h) · (ρ · V² / 2),   P_pump = (ΔP · Q̇) / η_pump' }
+        ],
+        interviewerTip: 'Always check both local wall temperature AND bulk coolant temperature rise (ΔT = Q̇ / (ṁ·c_p)). A high flow rate with terrible thermal contact resistance still leaves cells hot!',
+        crossBridge: 'Cell internal resistance R_int rises sharply at cold temperatures and generates I²R + entropic heat during fast DC charging—coupling electrochemistry and BMS charge-rate limits directly to fluid loop capacity.',
+        links: [VERIFIED_LINKS.nptelComponents, VERIFIED_LINKS.mathworksSolutions, VERIFIED_LINKS.batteryUnivSafety],
+        questions: [
+          {
+            id: 'q-ht-1',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'For a fixed heat input Q̇ into a liquid-cooled cold plate with constant specific heat c_p, what happens to coolant temperature rise (T_out − T_in) if mass flow rate ṁ is doubled?',
+            options: [
+              'It is cut in half',
+              'It doubles',
+              'It stays identical regardless of flow rate',
+              'It drops to zero'
+            ],
+            correctIndex: 0,
+            explanation: 'From steady-state energy balance Q̇ = ṁ · c_p · (T_out − T_in), doubling ṁ for the same Q̇ halves (T_out − T_in).'
+          },
+          {
+            id: 'q-ht-2',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'In internal forced convection inside a coolant channel, why does turbulent flow generally provide much higher convective heat transfer than laminar flow?',
+            options: [
+              'Turbulent eddies mix warmer boundary-layer fluid with cooler core fluid, thinning the thermal resistance layer',
+              'Turbulence lowers the specific heat capacity of the coolant to zero',
+              'Laminar flow creates higher wall shear mixing than eddies',
+              'Turbulent flow eliminates conduction through the channel wall'
+            ],
+            correctIndex: 0,
+            explanation: 'Eddy mixing transports heat radially across the channel much faster than molecular conduction alone in a laminar sublayer.'
+          },
+          {
+            id: 'q-ht-3',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'Why is Thermal Interface Material (TIM) thickness and void control critical between a battery cell base and a cooling plate?',
+            options: [
+              'Air gaps have very low thermal conductivity, creating large interfacial thermal resistance',
+              'TIM increases the electrical short-circuit path between cells',
+              'Thick TIM always improves heat transfer regardless of conductivity',
+              'TIM is used only to reduce vehicle aerodynamic drag'
+            ],
+            correctIndex: 0,
+            explanation: 'Trapped air acts as a thermal insulator. Thin, uniform, void-free TIM minimizes contact resistance across microscopic surface roughness.'
+          },
+          {
+            id: 'q-ht-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: During a 150 kW DC fast-charge test, a 1D CFD model predicts max cell temperature of 36°C, but physical test cells hit 45°C even though pump flow sensor reads nominal flow. What multi-disciplinary cause should you investigate first?',
+            options: [
+              'Flow maldistribution/bypass across parallel channels or TIM air voids/thickness variation increasing local R_th',
+              'Earth’s magnetic field interfering with convective heat transfer',
+              'Coolant specific heat increasing during charging',
+              'Regenerative braking turning on during DC fast charging'
+            ],
+            correctIndex: 0,
+            explanation: 'Total loop flow can look normal while one branch starves (flow maldistribution) or local TIM gaps/delamination spike thermal resistance at specific cells.'
+          },
+          {
+            id: 'q-ht-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: At −10°C ambient, a battery pack has higher internal resistance and lower chemical reaction kinetics. If the Thermal + BMS controller tries to fast-charge at full C-rate immediately without preconditioning, what risk arises?',
+            options: [
+              'Severe polarization, overheating, and metallic lithium plating on the anode that degrades capacity and safety',
+              'Automatic increase in battery energy density above theoretical limits',
+              'Coolant freezing inside the radiator only when charging stops',
+              'Reduction of cell voltage to 0 V immediately'
+            ],
+            correctIndex: 0,
+            explanation: 'Cold temperatures slow lithium diffusion into the anode; pushing high current without thermal preconditioning drives lithium plating and sharp voltage rise.'
+          }
+        ]
+      },
+      {
+        id: 'machine-design-tribology',
+        num: '03',
+        category: 'core',
+        categoryLabel: 'Core Mechanical',
+        title: 'Machine Design, Tribology & Gear/Bearing Mechanics',
+        shortTitle: 'Machine Design & Tribology',
+        subtitle: 'Single-speed e-axles, involute gears, L10 bearing life, splines & EDM/VFD bearing damage',
+        labId: 'lab-gear',
+        overview: 'Most EVs use a high-speed electric motor paired with a compact 1-speed or 2-speed reduction gearbox. High shaft speeds (12,000–20,000+ RPM) amplify centrifugal loads, lubrication churn/starvation trade-offs, spline wear, and electrical bearing currents.',
+        equations: [
+          { label: 'Bearing L10 Life', formula: 'L10 (revolutions) = (C / P)^p,   where p = 3 (ball) or 10/3 (roller)' },
+          { label: 'Gear Mesh Frequency', formula: 'f_mesh = (N_pinion · RPM) / 60  (Harmonics: 2·f_mesh, 3·f_mesh)' },
+          { label: 'Torque & Power Link', formula: 'T = P / ω,   where ω = (2π · RPM) / 60' }
+        ],
+        interviewerTip: 'High motor RPM means high gear mesh frequencies that can excite housing resonances (gear whine). Mention macro/micro gear geometry modifications (profile/lead crown, tip relief) and oil jet/sump lubrication.',
+        crossBridge: 'Fast-switching inverters (especially SiC inverters with high dv/dt) induce shaft-to-ground capacitive voltages; if not mitigated, discharge currents cause bearing fluting/EDM pitting—a classic Mechanical + Power Electronics overlap.',
+        links: [VERIFIED_LINKS.saeStandards, VERIFIED_LINKS.nptelFundamentals, VERIFIED_LINKS.mathworksAcademia],
+        questions: [
+          {
+            id: 'q-md-1',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'For a rolling ball bearing (exponent p = 3), if equivalent dynamic load P increases by 2× while speed stays constant, by what factor does L10 fatigue life change?',
+            options: [
+              'Decreases by 8× (1/8 of original life)',
+              'Decreases by 2× (1/2 of original life)',
+              'Increases by 8×',
+              'Remains unchanged'
+            ],
+            correctIndex: 0,
+            explanation: 'Since L10 ∝ (1/P)³ for ball bearings, doubling load P reduces life by 2³ = 8×.'
+          },
+          {
+            id: 'q-md-2',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'Why is active/passive lubrication design in a high-speed EV gearbox a balancing act at high RPM?',
+            options: [
+              'Excessive oil churning increases drag losses and oil temp, while too little oil causes starvation and scuffing/wear',
+              'Oil loses all viscosity above 2,000 RPM regardless of grade',
+              'High RPM eliminates contact stress between gear teeth',
+              'Lubricants only cool gears and never reduce friction'
+            ],
+            correctIndex: 0,
+            explanation: 'Flooding a high-speed gear cavity causes heavy churning loss and heat; starving it risks boundary lubrication failure. Targeted splash/jet lubrication optimizes both.'
+          },
+          {
+            id: 'q-md-3',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'Why is gear micro-geometry modification (such as tip/root relief and lead crowning) widely used in EV reduction gearboxes?',
+            options: [
+              'To reduce transmission error, edge-loading under deflection, and tonal gear whine noise',
+              'To make spur gears behave like hydraulic pumps',
+              'To eliminate the need for heat treatment',
+              'To double motor peak torque without changing current'
+            ],
+            correctIndex: 0,
+            explanation: 'Under torque, gear teeth deflect and shafts bend; profile and lead modifications keep contact smooth, lowering excitation harmonics and NVH.'
+          },
+          {
+            id: 'q-md-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: After 15,000 km of dyno testing on a new high-voltage EV powertrain, rotor shaft bearings show washboard-like fluting and micro-craters on the raceways despite clean oil and normal mechanical loads. What is the culprit?',
+            options: [
+              'Electrical discharge machining (EDM) / shaft voltage currents induced by high-frequency inverter switching',
+              'Brinelling from leaving the car parked on asphalt',
+              'Cavitation inside the brake master cylinder',
+              'Over-tightening the wheel lug nuts'
+            ],
+            correctIndex: 0,
+            explanation: 'High-dv/dt inverter switching creates common-mode shaft voltages that discharge through the thin lubricant film, causing electrical pitting and fluting.'
+          },
+          {
+            id: 'q-md-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A motor shaft-to-rotor hub spline experiences micro-slip during rapid torque reversals (regen ↔ drive), producing reddish-brown debris and premature wear. Which mechanical mitigation helps most?',
+            options: [
+              'Proper interference/fit control, surface treatment/lubrication, or design geometry reducing micro-slip fretting',
+              'Increasing air gap flux density in the stator',
+              'Lowering coolant pump speed to zero',
+              'Replacing steel splines with unreinforced foam'
+            ],
+            correctIndex: 0,
+            explanation: 'Small oscillatory relative motion under normal contact pressure causes fretting wear/corrosion; controlling fit, micro-slip, and surface/lubrication design mitigates it.'
+          }
+        ]
+      },
+      {
+        id: 'mfg-gdt-joining-materials',
+        num: '04',
+        category: 'core',
+        categoryLabel: 'Core Mechanical',
+        title: 'Manufacturing, GD&T (ASME Y14.5), Joining & Lightweighting',
+        shortTitle: 'Mfg, GD&T & Joining',
+        subtitle: 'Datums, flatness/position tolerances, FSW/SPR/RSRW joining & aluminum/composite stack-ups',
+        labId: 'lab-gdt',
+        overview: 'EV structures mix aluminum extrusions, castings, high-strength steels, and composites to offset battery mass. Tight flatness and true position tolerances prevent stack-up binding, water leaks, and uneven thermal contact.',
+        equations: [
+          { label: 'Worst-Case Stack-Up', formula: 'T_total = Σ |T_i|  (Guaranteed 100% fit without rejects)' },
+          { label: 'RSS Statistical Stack-Up', formula: 'T_rss = √(Σ T_i²)  (Assumes independent normal distributions with Cp/Cpk control)' },
+          { label: 'Specific Strength / Stiffness', formula: 'σ_yield / ρ   and   E / ρ   (Key lightweighting benchmarks)' }
+        ],
+        interviewerTip: 'Always link a GD&T callout to a functional requirement: e.g., flatness on a cold-plate mating face controls TIM bondline thickness; true position on fastener holes prevents assembly binding.',
+        crossBridge: 'Joining dissimilar metals (like aluminum to steel or copper) introduces galvanic corrosion risk and different thermal expansion—requiring coatings, isolation layers, and joining processes like SPR, FSW, or structural adhesives.',
+        links: [VERIFIED_LINKS.saeStandards, VERIFIED_LINKS.mathworksAcademia, VERIFIED_LINKS.nptelComponents],
+        questions: [
+          {
+            id: 'q-mfg-1',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'On a cold-plate or battery lid sealing surface, why is GD&T Flatness (⏥) specified relative to a datum/surface requirement?',
+            options: [
+              'To control surface waviness so gaskets seal uniformly and TIM gap thickness stays predictable',
+              'To measure total part weight in kilograms',
+              'To convert metric dimensions into imperial units',
+              'To increase electrical resistance of copper busbars'
+            ],
+            correctIndex: 0,
+            explanation: 'Non-flat sealing or TIM mating faces create local gaps or over-compression, risking coolant/ingress leaks or uneven thermal resistance.'
+          },
+          {
+            id: 'q-mfg-2',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'Why is Friction Stir Welding (FSW) attractive for aluminum EV battery trays and cooling channels compared to conventional fusion welding?',
+            options: [
+              'It joins in the solid state below melting temperature, reducing solidification cracking, porosity, and distortion',
+              'It requires melting the aluminum into liquid pool ingots first',
+              'It turns aluminum alloys into magnetic permanent magnets',
+              'It eliminates all need for dimensional inspection'
+            ],
+            correctIndex: 0,
+            explanation: 'Because FSW is a solid-state joining process, it avoids fusion weld defects like hot cracking and gas porosity while keeping distortion lower.'
+          },
+          {
+            id: 'q-mfg-3',
+            domain: 'core',
+            isScenario: false,
+            prompt: 'What is a key advantage of Self-Piercing Riveting (SPR) in multi-material automotive bodies?',
+            options: [
+              'It can join dissimilar sheet materials (such as aluminum to steel) without a pre-drilled hole or high welding heat',
+              'It fuses parts by melting them at 2,500°C',
+              'It only works on thick cast iron blocks',
+              'It eliminates the need to check corrosion protection'
+            ],
+            correctIndex: 0,
+            explanation: 'SPR pierces the upper sheet and flares a rivet into the lower sheet without requiring pre-drilled alignment holes or high thermal heat input.'
+          },
+          {
+            id: 'q-mfg-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: An aluminum cold plate is joined to a steel bracket with an uncoated steel fastener in a humid/salt-spray environment. What electrochemical hazard must be prevented?',
+            options: [
+              'Galvanic corrosion accelerated by dissimilar metal potential difference and electrolyte moisture',
+              'Nuclear fission inside the aluminum alloy',
+              'Increase in tire rolling resistance due to rivet head height',
+              'Loss of battery state-of-charge through the fastener threads'
+            ],
+            correctIndex: 0,
+            explanation: 'Dissimilar metals in contact in the presence of an electrolyte (moisture/road salt) can form a galvanic cell, accelerating corrosion of the more anodic metal.'
+          },
+          {
+            id: 'q-mfg-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A battery module housing uses a thick structural adhesive bead plus mechanical fasteners. During assembly, adhesive cure shrinkage pulls the lid slightly out of plane, increasing TIM gap at one corner. How do manufacturing and thermal teams resolve this?',
+            options: [
+              'Use clamping fixtures during cure, control bondline spacer/thickness, and verify post-cure flatness/TIM fill',
+              'Remove all fasteners and rely solely on friction',
+              'Raise battery cell voltage to 1,500 V to melt the adhesive',
+              'Ignore gap variation because thermal conductivity is infinite'
+            ],
+            correctIndex: 0,
+            explanation: 'Controlling fixture clamping, bondline thickness (e.g., glass beads/standoffs), and cure profile keeps assembly geometry and thermal interface contact within spec.'
+          }
+        ]
+      },
+      {
+        id: 'ev-arch-dynamics',
+        num: '05',
+        category: 'ev',
+        categoryLabel: 'EV Systems',
+        title: 'EV Architectures & Vehicle Dynamics',
+        shortTitle: 'EV Arch & Dynamics',
+        subtitle: 'FWD/RWD/AWD layouts, tractive effort, grade/aero/rolling resistance & weight distribution',
+        labId: 'lab-dyn',
+        overview: 'Unlike ICE vehicles constrained by a transmission tunnel and front engine bay, skateboard EVs place a heavy battery pack low in the wheelbase. This lowers Center of Gravity (CG) height, reduces pitch/roll coupling, and reshapes axle load transfer.',
+        equations: [
+          { label: 'Road Load Force', formula: 'F_road = m·g·f_r·cos(θ) + m·g·sin(θ) + ½·ρ·C_d·A·v² + m·a_x' },
+          { label: 'Wheel Torque vs Motor', formula: 'T_wheel = T_motor · i_gear · η_drivetrain,   F_traction = T_wheel / r_wheel' },
+          { label: 'Longitudinal Load Transfer', formula: 'ΔF_z = (m · a_x · h_cg) / L_wheelbase' }
+        ],
+        interviewerTip: 'Notice that rolling resistance scales with normal load (m·g·f_r), grade scales with m·g·sin(θ), and aerodynamic drag scales with v²—so highway efficiency is heavily Cd·A and mass sensitive.',
+        crossBridge: 'Traction torque requests from the Vehicle Control Unit (VCU) are bounded in real time by BMS discharge power limits (kW), inverter thermal derating, and tire-road friction limits (μ·F_z).',
+        links: [VERIFIED_LINKS.nptelFundamentals, VERIFIED_LINKS.mathworksAcademia, VERIFIED_LINKS.saeStandards],
+        questions: [
+          {
+            id: 'q-dyn-1',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'How does placing a heavy battery pack low in a skateboard EV chassis affect vehicle dynamics?',
+            options: [
+              'Lowers Center of Gravity (CG) height, reducing roll/pitch load transfer for a given lateral/longitudinal acceleration',
+              'Raises CG height and increases rollover tendency',
+              'Eliminates aerodynamic drag at highway speeds',
+              'Makes rolling resistance independent of vehicle mass'
+            ],
+            correctIndex: 0,
+            explanation: 'Because load transfer ΔF_z is proportional to CG height h_cg, a lower CG reduces body roll and pitch moment for the same acceleration.'
+          },
+          {
+            id: 'q-dyn-2',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Which road-load component grows with the square of vehicle speed (v²)?',
+            options: [
+              'Aerodynamic drag force (½·ρ·C_d·A·v²)',
+              'Static gravitational weight force (m·g)',
+              'Static tire inflation pressure',
+              'Wheelbase length'
+            ],
+            correctIndex: 0,
+            explanation: 'Aerodynamic drag scales with v², meaning aero power scales with v³—making drag reduction vital for highway EV range.'
+          },
+          {
+            id: 'q-dyn-3',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'During hard acceleration on a level road, which way does longitudinal load transfer shift axle normal loads?',
+            options: [
+              'From the front axle toward the rear axle',
+              'From the rear axle toward the front axle',
+              'Equally outward to the left and right sides only',
+              'Zero load transfer occurs during acceleration'
+            ],
+            correctIndex: 0,
+            explanation: 'Forward acceleration creates an inertial force backward through the CG, unloading the front tires and increasing normal load on the rear tires.'
+          },
+          {
+            id: 'q-dyn-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A driver floors the accelerator pedal on a wet road at 15% State of Charge (SoC). Even though the motor is capable of 220 kW, acceleration feels softer than at 80% SoC. What cross-disciplinary factors can cause this?',
+            options: [
+              'BMS discharge power limit (kW) due to lower voltage/cell limits and/or traction control limiting wheel slip on wet μ',
+              'Gear ratio automatically changing to neutral at 15% SoC',
+              'Wheel radius shrinking by 50% when SoC drops',
+              'Aerodynamic drag becoming negative below 20% SoC'
+            ],
+            correctIndex: 0,
+            explanation: 'Available electrical power can drop at low SoC/high current (voltage sag/cell protection limits), and traction control caps torque if tires approach the wet friction limit.'
+          },
+          {
+            id: 'q-dyn-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: An AWD EV has a front Permanent Magnet Synchronous Motor (PMSM) and a rear Induction Motor (IM). Under steady light highway cruise, why might the control strategy bias torque toward or decouple one axle?',
+            options: [
+              'To minimize total drivetrain & motor core/drag losses across operating torque-speed regions',
+              'Because induction motors cannot spin above 500 RPM',
+              'To prevent steering wheel rotation',
+              'Because front wheels cannot carry vertical load'
+            ],
+            correctIndex: 0,
+            explanation: 'Torque split / axle disconnection optimizes combined motor efficiency, inverter switching/conduction losses, and drag losses across the operating map.'
+          }
+        ]
+      },
+      {
+        id: 'battery-mech-design',
+        num: '06',
+        category: 'ev',
+        categoryLabel: 'EV Systems',
+        title: 'Battery Pack Mechanical & Structural Design',
+        shortTitle: 'Battery Pack Mech',
+        subtitle: 'Cylindrical, prismatic & pouch formats, cell swelling/compression, crash/intrusion & IP sealing',
+        labId: 'lab-pack',
+        overview: 'The battery pack is often the heaviest and highest-energy subsystem in an EV. Mechanical design must protect cells against underbody curb/pole impacts, manage cell expansion/swelling over life, route hot vent gases safely, and maintain ingress protection.',
+        equations: [
+          { label: 'Pack Gravimetric Density', formula: 'e_pack (Wh/kg) = E_usable_pack / m_pack_total' },
+          { label: 'Cell Swell / Stack Strain', formula: 'ε_stack = ΔL_stack / L_0  (Managed via compliant foam/springs & constraint plates)' },
+          { label: 'Vent Gas Mass Flow', formula: 'ṁ_vent = f(ΔP_pack, A_vent_orifice, T_gas, ρ_gas)' }
+        ],
+        interviewerTip: 'Cell-to-Pack (CTP) and Cell-to-Chassis (CTC) remove module housings to improve gravimetric/volumetric density, but make individual cell replacement harder and require careful structural/thermal isolation.',
+        crossBridge: 'Lithium-ion cells swell mechanically with charge state and cycle aging; excessive rigid constraint can raise internal stress, while uncontrolled swelling can push against lids or rupture busbar welds.',
+        links: [VERIFIED_LINKS.batteryUnivGuide, VERIFIED_LINKS.batteryUnivSafety, VERIFIED_LINKS.nptelFundamentals],
+        questions: [
+          {
+            id: 'q-bat-1',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why do prismatic cell stacks often include compliant pads or controlled clamping pressure in a module/pack?',
+            options: [
+              'To accommodate reversible and aging cell swelling while maintaining uniform contact and limiting excessive stack force',
+              'To make the cells dissolve electrolyte faster',
+              'To eliminate all electrical insulation between cells',
+              'To increase pack weight without adding energy'
+            ],
+            correctIndex: 0,
+            explanation: 'Prismatic cells expand and contract during cycling and aging. Controlled compliance/clamping manages mechanical forces and helps maintain consistent interface contact.'
+          },
+          {
+            id: 'q-bat-2',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'What is a primary structural goal of Cell-to-Pack (CTP) architecture compared to traditional cell-to-module-to-pack?',
+            options: [
+              'Increasing pack-level gravimetric and volumetric energy density by eliminating intermediate module walls/fasteners',
+              'Eliminating the need for crash load paths or high-voltage isolation',
+              'Making the battery pack weigh 0 kg',
+              'Replacing all coolant with compressed air'
+            ],
+            correctIndex: 0,
+            explanation: 'Removing module sub-housings reduces non-active structural mass and volume overhead, improving pack energy density.'
+          },
+          {
+            id: 'q-bat-3',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why is an engineered pressure-relief / vent path important in a sealed EV battery enclosure?',
+            options: [
+              'To safely direct high-temperature, flammable/toxic vent gases away from occupants and prevent enclosure over-pressurization during thermal runaway',
+              'To let rainwater cool the cells during car washes',
+              'To lower tire pressure automatically',
+              'To vent normal battery charging current to the atmosphere'
+            ],
+            correctIndex: 0,
+            explanation: 'During a thermal runaway event, rapid gas generation can over-pressurize a tight housing; directed venting and flame arrest/baffles help manage gas discharge safely.'
+          },
+          {
+            id: 'q-bat-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: An EV drives over a sharp road debris block, denting the lower tray protection plate upward into a cell bottom. Which multi-disciplinary chain of events is most critical to prevent?',
+            options: [
+              'Mechanical separator puncture → internal short circuit → rapid Joule heating → thermal runaway and gas venting',
+              'Increased tire tread depth → lower rolling resistance',
+              'Higher regenerative braking torque → instant battery full charge',
+              'Coolant freezing inside the radiator'
+            ],
+            correctIndex: 0,
+            explanation: 'Mechanical intrusion can breach cell separators, causing an internal short circuit and localized heating that can trigger thermal runaway.'
+          },
+          {
+            id: 'q-bat-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: During pack assembly, a lid gasket is compressed slightly unevenly around a corner where two structural ribs meet. What failure mode does this threaten?',
+            options: [
+              'Moisture/dust ingress degrading high-voltage insulation resistance and risking tracking/shorting',
+              'Higher motor peak RPM',
+              'Lower vehicle wheelbase',
+              'Faster DC charging with zero heat'
+            ],
+            correctIndex: 0,
+            explanation: 'Uneven gasket compression compromises environmental sealing, allowing moisture/contaminants that can degrade HV isolation resistance.'
+          }
+        ]
+      },
+      {
+        id: 'btms-thermal-loops',
+        num: '07',
+        category: 'ev',
+        categoryLabel: 'EV Systems',
+        title: 'Battery & Powertrain Thermal Management (BTMS)',
+        shortTitle: 'BTMS & Thermal Loops',
+        subtitle: 'Liquid cold plates, chillers, heat pumps, multi-way valves & cell-to-cell ΔT uniformity',
+        labId: 'lab-btms',
+        overview: 'A complete EV thermal system often links a battery loop (cold plates, chiller, PTC heater or heat pump) and a powertrain loop (motor, inverter, onboard charger/DC-DC) via multi-way valves to heat or cool selectively.',
+        equations: [
+          { label: 'Cell ΔT Uniformity', formula: 'ΔT_max_cell = T_cell_hottest − T_cell_coolest  (Keep tight to avoid uneven aging)' },
+          { label: 'Chiller / Heat Pump COP', formula: 'COP_cooling = Q̇_evap / Ẇ_comp,   COP_heating = Q̇_cond / Ẇ_comp' },
+          { label: 'Loop Heat Balance', formula: 'Q̇_battery + Q̇_powertrain + Q̇_heater − Q̇_rejected = m_eff · c_eff · (dT/dt)' }
+        ],
+        interviewerTip: 'Keep cell-to-cell temperature spread (ΔT) small across the pack—even if average temperature looks fine, one hot zone ages faster and limits pack power.',
+        crossBridge: 'Thermal controls coordinate valve positions, pump PWM, fan/chiller operation, and BMS charge/discharge power limits based on thermistor arrays and cell voltage/impedance estimates.',
+        links: [VERIFIED_LINKS.mathworksSolutions, VERIFIED_LINKS.nptelComponents, VERIFIED_LINKS.batteryUnivGuide],
+        questions: [
+          {
+            id: 'q-btms-1',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why is keeping temperature uniformity (low ΔT between hottest and coolest cells) critical inside a battery pack?',
+            options: [
+              'Uneven temperatures cause uneven aging, capacity imbalance, and internal resistance divergence across cells',
+              'Temperature uniformity increases aerodynamic lift',
+              'Cells only conduct electricity when ΔT exceeds 40°C',
+              'Uniform temperature disables the BMS'
+            ],
+            correctIndex: 0,
+            explanation: 'Warmer cells age faster and have different impedance than cooler cells, leading to imbalance and limiting usable pack performance over life.'
+          },
+          {
+            id: 'q-btms-2',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why do many modern EVs use a heat pump or chiller integration rather than relying only on a resistive PTC heater for cabin/battery conditioning?',
+            options: [
+              'A vapor-compression heat pump can transfer heat with COP > 1, using less electrical energy per unit heat in moderate-to-cool conditions',
+              'PTC heaters cannot generate heat',
+              'Heat pumps violate conservation of energy by creating free mass',
+              'Chillers are only used to inflate tires'
+            ],
+            correctIndex: 0,
+            explanation: 'Heat pumps move existing thermal energy using compressor work, achieving higher thermal efficiency (COP > 1) than pure resistive heating when ambient conditions allow.'
+          },
+          {
+            id: 'q-btms-3',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why are battery and power-electronics loops often separated or valved rather than blindly series-connected at all times?',
+            options: [
+              'Power electronics can tolerate higher temperatures than lithium-ion cells and can otherwise dump unwanted heat into the battery',
+              'Motors cannot be liquid-cooled',
+              'Coolant cannot flow through valves',
+              'Battery packs do not generate heat'
+            ],
+            correctIndex: 0,
+            explanation: 'Power electronics often operate safely at higher temperatures than batteries; routing hot inverter coolant into a warm battery can worsen battery thermal stress.'
+          },
+          {
+            id: 'q-btms-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A multi-port coolant valve sticks partially closed during a high-ambient fast charge. Cell temperatures climb toward the derating threshold. What should the integrated controls/BMS do?',
+            options: [
+              'Derate allowable charging current/power, log a thermal fault/DTC, and command maximum safe cooling/chiller effort',
+              'Increase charging current to finish before overheating',
+              'Shut off all coolant pumps immediately',
+              'Ignore temperature sensors above 40°C'
+            ],
+            correctIndex: 0,
+            explanation: 'Reducing charge current lowers I²R heat generation while maximizing cooling and fault diagnostics protects the pack safely.'
+          },
+          {
+            id: 'q-btms-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: A cold plate is designed with serpentine channels, and outlet temperature is slightly higher than inlet. However, cells directly over the turn bends run 6°C hotter than cells over straight sections. What could explain this?',
+            options: [
+              'Flow stagnation/recirculation zones, uneven TIM contact pressure, or local heat flux concentration at those cells',
+              'Coolant cooling down as it flows through the plate',
+              'Negative thermal conductivity of aluminum',
+              'Thermistor calibration being only in Kelvin'
+            ],
+            correctIndex: 0,
+            explanation: 'Local variations in TIM thickness/voids, clamping pressure, or flow distribution can create localized hot spots even when bulk ΔT looks moderate.'
+          }
+        ]
+      },
+      {
+        id: 'regen-nvh-homologation',
+        num: '08',
+        category: 'ev',
+        categoryLabel: 'EV Systems',
+        title: 'Regenerative Braking, Chassis NVH & Homologation',
+        shortTitle: 'Regen, NVH & Standards',
+        subtitle: 'Brake blending, ABS/low-μ stability, EV NVH/AVAS, DFMEA & regulatory safety compliance',
+        labId: 'lab-nvh',
+        overview: 'Without a loud ICE to mask wind, tire, and gear whine, EV cabin acoustics shift toward high-frequency tonal noise and road boom. Meanwhile, regenerative braking must blend seamlessly with friction brakes and yield to ABS/stability control.',
+        equations: [
+          { label: 'Regen Mechanical Power', formula: 'P_regen_wheel = F_regen_wheel · v,   P_batt_in = η_regen_total · P_regen_wheel' },
+          { label: 'Modal Natural Frequency', formula: 'f_n = (1 / 2π) · √(k_eff / m_eff)  (Avoid coincidence with excitation orders)' },
+          { label: 'DFMEA Risk Priority', formula: 'RPN / Action Priority = Severity (S) × Occurrence (O) × Detection (D)  (Prioritize High S)' }
+        ],
+        interviewerTip: 'In DFMEA and safety reviews, high-Severity failure modes (like unintended acceleration, loss of braking, or thermal hazard) always demand engineering design/mitigation action—never just a low detection score.',
+        crossBridge: 'Brake blending coordinates regenerative motor torque with hydraulic/electro-mechanical friction calipers so pedal feel stays consistent across varying battery SoC, temperature, and road μ.',
+        links: [VERIFIED_LINKS.uneceRegs, VERIFIED_LINKS.saeStandards, VERIFIED_LINKS.mathworksSolutions],
+        questions: [
+          {
+            id: 'q-reg-1',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why must regenerative braking torque be blended with or handed over to friction brakes on a slippery (low-μ) road or during ABS intervention?',
+            options: [
+              'Excessive braking torque on driven wheels can lock wheels and destabilize the vehicle if not coordinated with slip/ABS control',
+              'Regenerative braking only works when tires are sliding',
+              'Friction brakes stop working below 50 km/h',
+              'Low-μ roads increase battery capacity'
+            ],
+            correctIndex: 0,
+            explanation: 'Brake torque must respect tire-road adhesion limits and coordinate with ABS/ESC so braking remains stable and controllable.'
+          },
+          {
+            id: 'q-reg-2',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'Why do EVs often feel noisier in wind, road, or high-frequency powertrain whine than ICE cars at similar speeds?',
+            options: [
+              'Removal of ICE masking noise exposes wind, tire-road, and high-frequency gear/motor tonal components',
+              'EVs generate higher low-frequency exhaust rumble than V8 engines',
+              'Air density increases inside the cabin at high speed',
+              'Acoustic waves travel faster in copper than in steel'
+            ],
+            correctIndex: 0,
+            explanation: 'Without engine noise masking them, subtle tonal whine, motor electromagnetic noise, and tire/wind noise become more noticeable.'
+          },
+          {
+            id: 'q-reg-3',
+            domain: 'ev',
+            isScenario: false,
+            prompt: 'In Design FMEA (DFMEA) for an EV component, if a failure mode has very high Severity (safety/regulatory impact), what is the right engineering approach?',
+            options: [
+              'Implement design/architectural mitigations to prevent or reduce the hazard rather than relying solely on end-of-line inspection',
+              'Ignore Severity if Occurrence is estimated low',
+              'Delete the failure mode from the DFMEA table',
+              'Rely only on visual inspection after shipping'
+            ],
+            correctIndex: 0,
+            explanation: 'High-severity hazards require robust design prevention and fault mitigation controls, not just post-build detection.'
+          },
+          {
+            id: 'q-reg-4',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: While braking over washboard bumps on a corner, a driver notices a subtle change in brake pedal feel as regen torque fluctuates. Why does this happen, and how do brake systems address it?',
+            options: [
+              'Wheel speed/slip fluctuations cause regen torque modulation; brake blending/emulator control compensates friction torque to keep pedal feel steady',
+              'The battery drains to 0% during a single bump',
+              'Brake fluid freezes when wheels bounce',
+              'Steering lock engages automatically on bumps'
+            ],
+            correctIndex: 0,
+            explanation: 'When wheel slip changes over uneven surfaces, regen torque may ramp down/modulate; active brake blending adjusts friction braking to maintain predictable deceleration and pedal feel.'
+          },
+          {
+            id: 'q-reg-5',
+            domain: 'cross',
+            isScenario: true,
+            prompt: 'SCENARIO: An EV is nearly full (96% SoC) at the top of a long mountain descent. Why might regenerative braking availability be limited partway down the hill?',
+            options: [
+              'High SoC limits charge acceptance to prevent over-voltage/overcharge, requiring friction brakes (and/or dissipative braking) to absorb descent energy',
+              'Gravity reverses direction on steep hills',
+              'Friction brakes overheat instantly at 96% SoC',
+              'The speedometer stops working above 90% SoC'
+            ],
+            correctIndex: 0,
+            explanation: 'A nearly full battery has limited charge headroom; safety limits cap regen charging current, shifting braking duty toward friction brakes.'
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 3. CUSTOM SVG SCHEMATICS & INTERACTIVE ENGINEERING LABS (ALL 8 MODULES)
+    // =========================================================================
+    function getModuleSchematicSVG(labId) {
+      switch (labId) {
+        case 'lab-som':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Battery Tray Bending and Bolt Preload Schematic">
+              <rect x="24" y="54" width="312" height="14" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+              <path d="M 32 61 Q 180 78 328 61" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
+              <line x1="70" y1="18" x2="70" y2="50" stroke="#34d399" stroke-width="2"/>
+              <polygon points="70,53 65,45 75,45" fill="#34d399"/>
+              <line x1="180" y1="14" x2="180" y2="50" stroke="#f59e0b" stroke-width="2.2"/>
+              <polygon points="180,53 175,45 185,45" fill="#f59e0b"/>
+              <line x1="290" y1="18" x2="290" y2="50" stroke="#34d399" stroke-width="2"/>
+              <polygon points="290,53 285,45 295,45" fill="#34d399"/>
+              <rect x="44" y="68" width="18" height="22" rx="2" fill="#334155" stroke="#94a3b8"/>
+              <rect x="298" y="68" width="18" height="22" rx="2" fill="#334155" stroke="#94a3b8"/>
+              <text x="180" y="106" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif">Pack Tray Bending (σ_v), Mount Reaction &amp; Deflection δ_max</text>
+            </svg>`;
+        case 'lab-heat':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Coolant Delta-T and Flow Schematic">
+              <rect x="95" y="24" width="170" height="44" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+              <path d="M 25 46 L 92 46" stroke="#38bdf8" stroke-width="2.5"/>
+              <polygon points="94,46 86,42 86,50" fill="#38bdf8"/>
+              <path d="M 110 46 L 145 36 L 180 56 L 215 36 L 248 46" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+              <path d="M 265 46 L 332 46" stroke="#fb7185" stroke-width="2.5"/>
+              <polygon points="335,46 327,42 327,50" fill="#fb7185"/>
+              <text x="58" y="36" text-anchor="middle" fill="#7dd3fc" font-size="9.5">T_in (ṁ, c_p)</text>
+              <text x="180" y="83" text-anchor="middle" fill="#fbbf24" font-size="10">Q̇ = ṁ · c_p · (T_out − T_in)</text>
+              <text x="302" y="36" text-anchor="middle" fill="#fda4af" font-size="9.5">T_out</text>
+            </svg>`;
+        case 'lab-gear':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="e-Axle Bearing L10 Life Schematic">
+              <circle cx="115" cy="56" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+              <circle cx="115" cy="56" r="17" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3 3"/>
+              <circle cx="115" cy="56" r="8" fill="#0ea5e9" opacity="0.35"/>
+              <circle cx="154" cy="56" r="14" fill="none" stroke="#34d399" stroke-width="2"/>
+              <line x1="50" y1="56" x2="275" y2="56" stroke="#cbd5e1" stroke-width="2"/>
+              <rect x="215" y="42" width="22" height="28" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="180" y="104" text-anchor="middle" fill="#94a3b8" font-size="10">Pinion → Gear Mesh &amp; Bearing L10 = (C / P)^p</text>
+            </svg>`;
+        case 'lab-gdt':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Cold Plate Flatness and TIM Stack-Up Schematic">
+              <rect x="40" y="24" width="280" height="14" rx="2" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+              <rect x="40" y="38" width="280" height="10" fill="#f59e0b" opacity="0.28" stroke="#fbbf24" stroke-width="1"/>
+              <rect x="40" y="48" width="280" height="22" rx="2" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+              <rect x="64" y="12" width="96" height="10" fill="#020617" stroke="#e2e8f0" stroke-width="1"/>
+              <text x="112" y="20" text-anchor="middle" fill="#fef08a" font-size="8.5">⏥ Flatness | TIM Stack</text>
+              <text x="180" y="96" text-anchor="middle" fill="#94a3b8" font-size="10">Mating Face Flatness + TIM Bondline + R_th Impact</text>
+            </svg>`;
+        case 'lab-dyn':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Road Load Power Split Schematic">
+              <line x1="18" y1="86" x2="342" y2="54" stroke="#475569" stroke-width="2.5"/>
+              <rect x="110" y="42" width="110" height="20" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+              <circle cx="132" cy="68" r="11" fill="#1e293b" stroke="#e2e8f0" stroke-width="1.5"/>
+              <circle cx="202" cy="62" r="11" fill="#1e293b" stroke="#e2e8f0" stroke-width="1.5"/>
+              <path d="M 224 52 L 268 48" stroke="#f59e0b" stroke-width="2"/>
+              <polygon points="271,48 263,44 263,52" fill="#f59e0b"/>
+              <text x="180" y="106" text-anchor="middle" fill="#94a3b8" font-size="10">P_total = (F_aero + F_roll + F_grade) · v</text>
+            </svg>`;
+        case 'lab-pack':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="CTP / CTC Pack Density Schematic">
+              <rect x="36" y="24" width="288" height="54" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+              <rect x="52" y="32" width="58" height="38" rx="3" fill="#064e3b" stroke="#34d399"/>
+              <rect x="118" y="32" width="58" height="38" rx="3" fill="#064e3b" stroke="#34d399"/>
+              <rect x="184" y="32" width="58" height="38" rx="3" fill="#064e3b" stroke="#34d399"/>
+              <rect x="250" y="32" width="58" height="38" rx="3" fill="#064e3b" stroke="#34d399"/>
+              <text x="180" y="102" text-anchor="middle" fill="#94a3b8" font-size="10">Cell-to-Pack (CTP / CTC) Structural Integration &amp; Density</text>
+            </svg>`;
+        case 'lab-btms':
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Fast-Charge I2R Heat Generation Schematic">
+              <rect x="48" y="26" width="264" height="44" rx="6" fill="#0f172a" stroke="#f97316" stroke-width="1.5"/>
+              <rect x="64" y="35" width="38" height="26" rx="3" fill="#431407" stroke="#fb923c"/>
+              <rect x="114" y="35" width="38" height="26" rx="3" fill="#431407" stroke="#fb923c"/>
+              <rect x="164" y="35" width="38" height="26" rx="3" fill="#431407" stroke="#fb923c"/>
+              <rect x="214" y="35" width="38" height="26" rx="3" fill="#431407" stroke="#fb923c"/>
+              <rect x="264" y="35" width="34" height="26" rx="3" fill="#431407" stroke="#fb923c"/>
+              <text x="180" y="98" text-anchor="middle" fill="#94a3b8" font-size="10">Q̇_joule = I² · R_int  (Fast Charge Heat vs Cooling Power)</text>
+            </svg>`;
+        case 'lab-nvh':
+        default:
+          return `
+            <svg viewBox="0 0 360 120" class="w-full h-28 rounded-xl bg-slate-950/90 border border-slate-800 p-2" role="img" aria-label="Gear Whine Mesh Frequency Schematic">
+              <circle cx="110" cy="54" r="24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="5 3"/>
+              <circle cx="152" cy="54" r="16" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 2"/>
+              <path d="M 205 54 Q 222 24 239 54 T 273 54 T 307 54" fill="none" stroke="#22d3ee" stroke-width="2"/>
+              <text x="180" y="102" text-anchor="middle" fill="#94a3b8" font-size="10">f_mesh = (N_pinion · RPM) / 60  &amp;  Acoustic Tone Risk</text>
+            </svg>`;
+      }
+    }
+
+    function getInteractiveLabHTML(labId) {
+      switch (labId) {
+        case 'lab-som':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 01: Tray Bending FoS Estimator</span>
+                <span id="som-fos-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300">FoS: 2.00</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Peak Bending Stress (σ_max)</span><strong id="som-stress-val">135 MPa</strong></div>
+                  <input type="range" min="40" max="260" step="5" value="135" oninput="updateLabSOM()" id="som-stress" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Material Yield / Fatigue Limit</span><strong id="som-allow-val">270 MPa</strong></div>
+                  <input type="range" min="150" max="450" step="10" value="270" oninput="updateLabSOM()" id="som-allow" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="som-note" class="text-[11px] text-slate-400">Healthy margin against yield/cyclic stress; verify weld/fastener joints separately.</p>
+            </div>`;
+        case 'lab-heat':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 02: Coolant ΔT &amp; Flow Calculator</span>
+                <span id="heat-dt-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300">ΔT: 4.78 °C</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Heat Rejection (Q̇)</span><strong id="heat-q-val">10.0 kW</strong></div>
+                  <input type="range" min="2" max="30" step="1" value="10" oninput="updateLabHeat()" id="heat-q" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Coolant Flow Rate (Q_flow)</span><strong id="heat-m-val">10.0 L/min</strong></div>
+                  <input type="range" min="4" max="25" step="0.5" value="10" oninput="updateLabHeat()" id="heat-m" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="heat-note" class="text-[11px] text-slate-400">Assumes ρ ≈ 1.05 kg/L and c_p ≈ 3.55 kJ/(kg·K) for typical glycol-water coolant.</p>
+            </div>`;
+        case 'lab-gear':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 03: e-Axle Bearing L10 Life Ratio</span>
+                <span id="gear-life-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300">Life Factor: 8.0×</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Equivalent Load Ratio (P / P_base)</span><strong id="gear-p-val">0.50×</strong></div>
+                  <input type="range" min="0.4" max="2.0" step="0.1" value="0.5" oninput="updateLabGear()" id="gear-p" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Bearing Type</span><strong id="gear-type-val">Ball (p = 3.0)</strong></div>
+                  <select onchange="updateLabGear()" id="gear-type" class="w-full rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-xs text-slate-200">
+                    <option value="3" selected>Deep Groove / Angular Ball (p = 3.0)</option>
+                    <option value="3.3333">Roller / Tapered Roller (p = 10/3)</option>
+                  </select>
+                </div>
+              </div>
+              <p id="gear-note" class="text-[11px] text-slate-400">Halving bearing load increases L10 life by 8× for ball bearings.</p>
+            </div>`;
+        case 'lab-gdt':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 04: Cold-Plate Flatness &amp; TIM Stack-Up</span>
+                <span id="gdt-rth-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300">TIM R_th: 0.25 K/W</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Effective TIM + Flatness Gap</span><strong id="gdt-gap-val">0.50 mm</strong></div>
+                  <input type="range" min="0.1" max="1.5" step="0.05" value="0.5" oninput="updateLabGDT()" id="gdt-gap" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>TIM Thermal Conductivity (k_TIM)</span><strong id="gdt-k-val">2.0 W/m·K</strong></div>
+                  <input type="range" min="0.8" max="6.0" step="0.2" value="2.0" oninput="updateLabGDT()" id="gdt-k" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="gdt-note" class="text-[11px] text-slate-400">Evaluated over 100 cm² (0.01 m²) effective mating area: R_th = t / (k · A).</p>
+            </div>`;
+        case 'lab-dyn':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 05: Road Load Power Split</span>
+                <span id="dyn-ptot-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300">Total: 27.6 kW</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Vehicle Speed</span><strong id="dyn-v-val">100 km/h</strong></div>
+                  <input type="range" min="40" max="140" step="5" value="100" oninput="updateLabDyn()" id="dyn-v" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Road Grade</span><strong id="dyn-g-val">0.0 %</strong></div>
+                  <input type="range" min="0" max="12" step="0.5" value="0" oninput="updateLabDyn()" id="dyn-g" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="dyn-note" class="text-[11px] text-slate-400">1,800 kg EV, Cd·A = 0.62 m², f_r = 0.010, air density ρ = 1.2 kg/m³.</p>
+            </div>`;
+        case 'lab-pack':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 06: CTP / CTC Pack Density Estimator</span>
+                <span id="pack-dens-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-300">Pack: 162 Wh/kg</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Cell Specific Energy</span><strong id="pack-cell-val">240 Wh/kg</strong></div>
+                  <input type="range" min="160" max="310" step="5" value="240" oninput="updateLabPack()" id="pack-cell" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Structural / Non-Cell Mass Share</span><strong id="pack-overhead-val">32 %</strong></div>
+                  <input type="range" min="20" max="48" step="1" value="32" oninput="updateLabPack()" id="pack-overhead" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="pack-note" class="text-[11px] text-slate-400">Pack Wh/kg ≈ Cell Wh/kg × (1 − non-cell mass fraction).</p>
+            </div>`;
+        case 'lab-btms':
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 07: Fast-Charge I²R Heat Simulator</span>
+                <span id="btms-q-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300">Joule Heat: 16.0 kW</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Pack Charging Current (I)</span><strong id="btms-i-val">200 A</strong></div>
+                  <input type="range" min="50" max="500" step="10" value="200" oninput="updateLabBTMS()" id="btms-i" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Effective Pack Internal Resistance (R)</span><strong id="btms-r-val">0.40 Ω</strong></div>
+                  <input type="range" min="0.05" max="1.20" step="0.05" value="0.40" oninput="updateLabBTMS()" id="btms-r" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="btms-note" class="text-[11px] text-slate-400">Doubling current quadruples I²R resistive heating inside the pack.</p>
+            </div>`;
+        case 'lab-nvh':
+        default:
+          return `
+            <div class="rounded-xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Lab 08: Gear Whine Mesh Frequency</span>
+                <span id="nvh-f-badge" class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300">f_mesh: 4,000 Hz</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Motor Speed (RPM)</span><strong id="nvh-rpm-val">12,000 RPM</strong></div>
+                  <input type="range" min="2000" max="20000" step="500" value="12000" oninput="updateLabNVH()" id="nvh-rpm" class="ev-slider"/>
+                </div>
+                <div>
+                  <div class="flex justify-between text-slate-300 mb-1"><span>Pinion Teeth (N_pinion)</span><strong id="nvh-z-val">20 teeth</strong></div>
+                  <input type="range" min="14" max="36" step="1" value="20" oninput="updateLabNVH()" id="nvh-z" class="ev-slider"/>
+                </div>
+              </div>
+              <p id="nvh-note" class="text-[11px] text-slate-400">Watch out for 1× and 2× f_mesh tones crossing housing modal frequencies.</p>
+            </div>`;
+      }
+    }
+
+    function updateLabSOM() {
+      const sEl = document.getElementById('som-stress');
+      const aEl = document.getElementById('som-allow');
+      if (!sEl || !aEl) return;
+      const sigma = Number(sEl.value) || 135;
+      const allow = Number(aEl.value) || 270;
+      const fos = allow / Math.max(sigma, 1);
+      const badge = document.getElementById('som-fos-badge');
+      const note = document.getElementById('som-note');
+      document.getElementById('som-stress-val').textContent = `${sigma} MPa`;
+      document.getElementById('som-allow-val').textContent = `${allow} MPa`;
+      if (badge) {
+        badge.textContent = `FoS: ${fos.toFixed(2)}`;
+        badge.className = `text-xs font-extrabold px-2 py-0.5 rounded-lg ${fos >= 1.5 ? 'bg-emerald-500/15 text-emerald-300' : fos >= 1.0 ? 'bg-amber-500/15 text-amber-300' : 'bg-rose-500/15 text-rose-300'}`;
+      }
+      if (note) {
+        note.textContent = fos >= 1.5 ? 'Comfortable margin; verify stress concentrations, bolts & fatigue cycles.' : fos >= 1.0 ? 'Tight margin—review load factors, fillets & cyclic fatigue.' : 'Yield/limit exceeded—increase section modulus or material strength.';
+      }
+    }
+
+    function updateLabHeat() {
+      const qEl = document.getElementById('heat-q');
+      const fEl = document.getElementById('heat-m');
+      if (!qEl || !fEl) return;
+      const qKw = Number(qEl.value) || 10;
+      const lpm = Number(fEl.value) || 10;
+      const mDot = (lpm / 60) * 1.05; // kg/s
+      const cp = 3.55; // kJ/(kg*K)
+      const dT = qKw / Math.max(mDot * cp, 0.01);
+      document.getElementById('heat-q-val').textContent = `${qKw.toFixed(1)} kW`;
+      document.getElementById('heat-m-val').textContent = `${lpm.toFixed(1)} L/min`;
+      const badge = document.getElementById('heat-dt-badge');
+      if (badge) {
+        badge.textContent = `ΔT: ${dT.toFixed(2)} °C`;
+        badge.className = `text-xs font-extrabold px-2 py-0.5 rounded-lg ${dT <= 6 ? 'bg-emerald-500/15 text-emerald-300' : dT <= 10 ? 'bg-cyan-500/15 text-cyan-300' : 'bg-amber-500/15 text-amber-300'}`;
+      }
+    }
+
+    function updateLabGear() {
+      const pEl = document.getElementById('gear-p');
+      const tEl = document.getElementById('gear-type');
+      if (!pEl || !tEl) return;
+      const pRatio = Number(pEl.value) || 1.0;
+      const expP = Number(tEl.value) || 3.0;
+      const lifeFactor = Math.pow(1 / Math.max(pRatio, 0.1), expP);
+      document.getElementById('gear-p-val').textContent = `${pRatio.toFixed(2)}×`;
+      document.getElementById('gear-type-val').textContent = expP > 3.1 ? 'Roller (p = 3.33)' : 'Ball (p = 3.0)';
+      const badge = document.getElementById('gear-life-badge');
+      const note = document.getElementById('gear-note');
+      if (badge) {
+        badge.textContent = `Life Factor: ${lifeFactor.toFixed(2)}×`;
+        badge.className = `text-xs font-extrabold px-2 py-0.5 rounded-lg ${lifeFactor >= 1 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`;
+      }
+      if (note) {
+        note.textContent = `L10 life scales as (1 / load_ratio)^${expP.toFixed(2)}.`;
+      }
+    }
+
+    function updateLabGDT() {
+      const gapEl = document.getElementById('gdt-gap');
+      const kEl = document.getElementById('gdt-k');
+      if (!gapEl || !kEl) return;
+      const gapMm = Number(gapEl.value) || 0.5;
+      const kTim = Number(kEl.value) || 2.0;
+      const areaM2 = 0.01; // 100 cm^2
+      const rTh = (gapMm * 0.001) / (kTim * areaM2);
+      document.getElementById('gdt-gap-val').textContent = `${gapMm.toFixed(2)} mm`;
+      document.getElementById('gdt-k-val').textContent = `${kTim.toFixed(1)} W/m·K`;
+      const badge = document.getElementById('gdt-rth-badge');
+      if (badge) {
+        badge.textContent = `TIM R_th: ${rTh.toFixed(2)} K/W`;
+      }
+    }
+
+    function updateLabDyn() {
+      const vEl = document.getElementById('dyn-v');
+      const gEl = document.getElementById('dyn-g');
+      if (!vEl || !gEl) return;
+      const vKmh = Number(vEl.value) || 100;
+      const gradePct = Number(gEl.value) || 0;
+      const vMs = vKmh / 3.6;
+      const mass = 1800;
+      const g = 9.81;
+      const theta = Math.atan(gradePct / 100);
+      const fRoll = mass * g * 0.01 * Math.cos(theta);
+      const fGrade = mass * g * Math.sin(theta);
+      const fAero = 0.5 * 1.2 * 0.62 * vMs * vMs;
+      const pKw = ((fRoll + fGrade + fAero) * vMs) / 1000;
+      document.getElementById('dyn-v-val').textContent = `${vKmh} km/h`;
+      document.getElementById('dyn-g-val').textContent = `${gradePct.toFixed(1)} %`;
+      const badge = document.getElementById('dyn-ptot-badge');
+      const note = document.getElementById('dyn-note');
+      if (badge) badge.textContent = `Total: ${pKw.toFixed(1)} kW`;
+      if (note) {
+        const pAero = (fAero * vMs) / 1000;
+        const pGrade = (fGrade * vMs) / 1000;
+        note.textContent = `Aero: ${pAero.toFixed(1)} kW | Grade: ${pGrade.toFixed(1)} kW | Roll: ${((fRoll * vMs) / 1000).toFixed(1)} kW.`;
+      }
+    }
+
+    function updateLabPack() {
+      const cEl = document.getElementById('pack-cell');
+      const oEl = document.getElementById('pack-overhead');
+      if (!cEl || !oEl) return;
+      const cellWhKg = Number(cEl.value) || 240;
+      const overheadPct = Number(oEl.value) || 32;
+      const packWhKg = cellWhKg * (1 - overheadPct / 100);
+      document.getElementById('pack-cell-val').textContent = `${cellWhKg} Wh/kg`;
+      document.getElementById('pack-overhead-val').textContent = `${overheadPct} %`;
+      const badge = document.getElementById('pack-dens-badge');
+      if (badge) badge.textContent = `Pack: ${Math.round(packWhKg)} Wh/kg`;
+    }
+
+    function updateLabBTMS() {
+      const iEl = document.getElementById('btms-i');
+      const rEl = document.getElementById('btms-r');
+      if (!iEl || !rEl) return;
+      const curr = Number(iEl.value) || 200;
+      const res = Number(rEl.value) || 0.4;
+      const qKw = (curr * curr * res) / 1000;
+      document.getElementById('btms-i-val').textContent = `${curr} A`;
+      document.getElementById('btms-r-val').textContent = `${res.toFixed(2)} Ω`;
+      const badge = document.getElementById('btms-q-badge');
+      if (badge) badge.textContent = `Joule Heat: ${qKw.toFixed(1)} kW`;
+    }
+
+    function updateLabNVH() {
+      const rpmEl = document.getElementById('nvh-rpm');
+      const zEl = document.getElementById('nvh-z');
+      if (!rpmEl || !zEl) return;
+      const rpm = Number(rpmEl.value) || 12000;
+      const teeth = Number(zEl.value) || 20;
+      const fMesh = (teeth * rpm) / 60;
+      document.getElementById('nvh-rpm-val').textContent = `${rpm.toLocaleString()} RPM`;
+      document.getElementById('nvh-z-val').textContent = `${teeth} teeth`;
+      const badge = document.getElementById('nvh-f-badge');
+      if (badge) badge.textContent = `f_mesh: ${Math.round(fMesh).toLocaleString()} Hz`;
+    }
+
+    function syncAllActiveLabs() {
+      updateLabSOM();
+      updateLabHeat();
+      updateLabGear();
+      updateLabGDT();
+      updateLabDyn();
+      updateLabPack();
+      updateLabBTMS();
+      updateLabNVH();
+    }
+
+    // =========================================================================
+    // 4. PROGRESS, RANK & ANALYTICS HELPERS
+    // =========================================================================
+    function getAllQuestions() {
+      const list = [];
+      MODULES.forEach(mod => {
+        mod.questions.forEach(q => {
+          list.push({
+            ...q,
+            moduleId: mod.id,
+            moduleNum: mod.num,
+            moduleTitle: mod.shortTitle,
+            moduleCategory: mod.category
+          });
+        });
+      });
+      return list;
+    }
+
+    function getRankTitle(xp) {
+      if (xp >= 1500) return 'Principal EV Mech Fellow';
+      if (xp >= 900) return 'Senior Powertrain & Pack Eng';
+      if (xp >= 450) return 'EV Systems Associate';
+      if (xp >= 150) return 'Junior Mech-EV Engineer';
+      return 'Fresh Mech Grad';
+    }
+
+    function calculateReadinessScore() {
+      const allQ = getAllQuestions();
+      const totalItems = MODULES.length + allQ.length;
+      if (totalItems === 0) return 0;
+      const notesDone = appState.completedNotes.length;
+      const solvedCorrect = Object.values(appState.solvedQuestions).filter(v => v && v.correct).length;
+      return Math.min(100, Math.round(((notesDone + solvedCorrect) / totalItems) * 100));
+    }
+
+    function updateTopHeader() {
+      try {
+        const xpEl = document.getElementById('hdr-xp');
+        const streakEl = document.getElementById('hdr-streak');
+        const rankEl = document.getElementById('hdr-rank');
+        const readEl = document.getElementById('hdr-readiness');
+        const barEl = document.getElementById('hdr-readiness-bar');
+        const readiness = calculateReadinessScore();
+
+        if (xpEl) xpEl.textContent = `${appState.xp} XP`;
+        if (streakEl) streakEl.textContent = `${appState.streak}`;
+        if (rankEl) rankEl.textContent = `Rank: ${getRankTitle(appState.xp)}`;
+        if (readEl) readEl.textContent = `${readiness}%`;
+        if (barEl) barEl.style.width = `${readiness}%`;
+      } catch (_err) {
+        // Ignore header update error
+      }
+    }
+
+    function setActiveNavTab(tabName) {
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'bg-cyan-500/10');
+        btn.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('text-cyan-400', 'bg-cyan-500/10');
+      }
+    }
+
+    // =========================================================================
+    // 5. MODAL & RESET CONTROLS
+    // =========================================================================
+    function openConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('inapp-modal');
+      const titleEl = document.getElementById('modal-title');
+      const msgEl = document.getElementById('modal-message');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      if (!modal || !titleEl || !msgEl || !confirmBtn) return;
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+      confirmBtn.onclick = function () {
+        closeModal();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('inapp-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function requestResetProgress() {
+      openConfirmModal(
+        'Reset All Progress?',
+        'This clears your XP, streak, completed study notes, and solved question history.',
+        function () {
+          appState = normalizeState(DEFAULT_PERSISTED_STATE);
+          safeRemoveStorageItem(STORAGE_KEY);
+          persistState();
+          navigate('home');
+        }
+      );
+    }
+
+    // =========================================================================
+    // 6. DRILL & MOCK INTERVIEW ENGINE (TIMED + SCENARIOS + 12-Q MOCK)
+    // =========================================================================
+    let drill = {
+      mode: 'module', // 'module' | 'scenario' | 'mock'
+      title: '',
+      moduleId: null,
+      questions: [],
+      index: 0,
+      maxSeconds: 45,
+      secondsLeft: 45,
+      timerId: null,
+      answered: false,
+      selectedOption: null,
+      correctCount: 0,
+      xpEarned: 0,
+      timeBonusEarned: 0,
+      results: [] // { q, isCorrect, timedOut, selectedOption }
+    };
+
+    function stopDrillTimer() {
+      if (drill.timerId) {
+        clearInterval(drill.timerId);
+        drill.timerId = null;
+      }
+    }
+
+    function startModuleDrill(moduleId) {
+      const mod = MODULES.find(m => m.id === moduleId);
+      if (!mod) return;
+      const qs = mod.questions.map(q => ({
+        ...q,
+        moduleId: mod.id,
+        moduleNum: mod.num,
+        moduleTitle: mod.shortTitle,
+        moduleCategory: mod.category
+      }));
+      launchDrillSession({
+        mode: 'module',
+        title: `Mod ${mod.num}: ${mod.shortTitle} Drill`,
+        moduleId: mod.id,
+        questions: qs,
+        secondsPerQuestion: 45
+      });
+    }
+
+    function startScenarioDrill() {
+      const allQ = getAllQuestions();
+      const scenarioPool = allQ.filter(q => q.isScenario);
+      const selected = scenarioPool.length >= 8 ? scenarioPool.slice(0, 8) : allQ.slice(0, 8);
+      launchDrillSession({
+        mode: 'scenario',
+        title: 'Scenario & Cross-Disciplinary Drill',
+        moduleId: null,
+        questions: selected,
+        secondsPerQuestion: 50
+      });
+    }
+
+    function startBalancedMock() {
+      const corePool = getAllQuestions().filter(q => q.moduleCategory === 'core');
+      const evPool = getAllQuestions().filter(q => q.moduleCategory === 'ev');
+
+      // Pick 6 Core Mechanical + 6 EV Systems for a balanced 12-question mock
+      const pickEvenly = (pool, count) => {
+        const chosen = [];
+        const step = Math.max(1, Math.floor(pool.length / count));
+        for (let i = 0; i < pool.length && chosen.length < count; i += step) {
+          chosen.push(pool[i]);
+        }
+        for (let i = 0; i < pool.length && chosen.length < count; i++) {
+          if (!chosen.includes(pool[i])) chosen.push(pool[i]);
+        }
+        return chosen.slice(0, count);
+      };
+
+      const balanced12 = [...pickEvenly(corePool, 6), ...pickEvenly(evPool, 6)];
+      launchDrillSession({
+        mode: 'mock',
+        title: 'Balanced 12-Q Mock Interview',
+        moduleId: null,
+        questions: balanced12,
+        secondsPerQuestion: 45
+      });
+    }
+
+    function launchDrillSession(config) {
+      try {
+        stopDrillTimer();
+        drill = {
+          mode: config.mode,
+          title: config.title,
+          moduleId: config.moduleId,
+          questions: config.questions,
+          index: 0,
+          maxSeconds: config.secondsPerQuestion || 45,
+          secondsLeft: config.secondsPerQuestion || 45,
+          timerId: null,
+          answered: false,
+          selectedOption: null,
+          correctCount: 0,
+          xpEarned: 0,
+          timeBonusEarned: 0,
+          results: []
+        };
+        setActiveNavTab(config.mode === 'scenario' ? 'scenarios' : config.mode === 'mock' ? 'mock' : 'modules');
+        renderDrillQuestion();
+        startQuestionCountdown();
+      } catch (err) {
+        showGlobalError(err && err.message ? err.message : 'Unable to launch drill.');
+      }
+    }
+
+    function startQuestionCountdown() {
+      stopDrillTimer();
+      drill.secondsLeft = drill.maxSeconds;
+      updateTimerVisuals();
+
+      drill.timerId = setInterval(function () {
+        if (drill.answered) {
+          stopDrillTimer();
+          return;
+        }
+        drill.secondsLeft -= 1;
+        updateTimerVisuals();
+
+        if (drill.secondsLeft <= 0) {
+          stopDrillTimer();
+          submitDrillAnswer(null, true);
+        }
+      }, 1000);
+    }
+
+    function updateTimerVisuals() {
+      const badge = document.getElementById('drill-timer-badge');
+      const bar = document.getElementById('drill-timer-bar');
+      if (!badge || !bar) return;
+
+      const sec = Math.max(0, drill.secondsLeft);
+      const pct = Math.max(0, Math.min(100, (sec / drill.maxSeconds) * 100));
+      badge.textContent = `${sec}s`;
+      bar.style.width = `${pct}%`;
+
+      badge.classList.remove('text-cyan-300', 'bg-cyan-500/15', 'border-cyan-500/30', 'text-amber-300', 'bg-amber-500/15', 'border-amber-500/30', 'text-rose-300', 'bg-rose-500/15', 'border-rose-500/30', 'timer-urgent');
+      bar.classList.remove('bg-cyan-400', 'bg-amber-400', 'bg-rose-500');
+
+      if (sec <= 8) {
+        badge.classList.add('text-rose-300', 'bg-rose-500/15', 'border-rose-500/30', 'timer-urgent');
+        bar.classList.add('bg-rose-500');
+      } else if (sec <= 18) {
+        badge.classList.add('text-amber-300', 'bg-amber-500/15', 'border-amber-500/30');
+        bar.classList.add('bg-amber-400');
+      } else {
+        badge.classList.add('text-cyan-300', 'bg-cyan-500/15', 'border-cyan-500/30');
+        bar.classList.add('bg-cyan-400');
+      }
+    }
+
+    function submitDrillAnswer(optionIndex, timedOut = false) {
+      if (drill.answered) return;
+      stopDrillTimer();
+      drill.answered = true;
+      drill.selectedOption = optionIndex;
+
+      const currentQ = drill.questions[drill.index];
+      const isCorrect = !timedOut && optionIndex === currentQ.correctIndex;
+
+      // Update persisted question record
+      const prevRec = appState.solvedQuestions[currentQ.id] || { correct: false, attempts: 0 };
+      appState.solvedQuestions[currentQ.id] = {
+        correct: prevRec.correct || isCorrect,
+        attempts: prevRec.attempts + 1
+      };
+
+      let gainedXp = 0;
+      let bonusXp = 0;
+
+      if (isCorrect) {
+        drill.correctCount += 1;
+        appState.streak += 1;
+        if (appState.streak > appState.bestStreak) {
+          appState.bestStreak = appState.streak;
+        }
+        const baseXp = currentQ.isScenario ? 35 : 25;
+        bonusXp = Math.max(0, Math.round((drill.secondsLeft / drill.maxSeconds) * 15));
+        gainedXp = baseXp + bonusXp;
+      } else {
+        appState.streak = 0;
+        gainedXp = 5; // Participation/learning XP
+      }
+
+      appState.xp += gainedXp;
+      drill.xpEarned += gainedXp;
+      drill.timeBonusEarned += bonusXp;
+      persistState();
+
+      drill.results.push({
+        q: currentQ,
+        isCorrect,
+        timedOut,
+        selectedOption: optionIndex
+      });
+
+      renderDrillQuestion();
+    }
+
+    function nextDrillQuestion() {
+      if (drill.index + 1 < drill.questions.length) {
+        drill.index += 1;
+        drill.answered = false;
+        drill.selectedOption = null;
+        renderDrillQuestion();
+        startQuestionCountdown();
+      } else {
+        stopDrillTimer();
+        renderDrillScorecard();
+      }
+    }
+
+    function renderDrillQuestion() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const q = drill.questions[drill.index];
+      const total = drill.questions.length;
+      const progressPct = Math.round(((drill.index + (drill.answered ? 1 : 0)) / total) * 100);
+
+      const optionsHtml = q.options.map((optText, idx) => {
+        let btnStyle = 'bg-slate-900/90 border-slate-700/80 text-slate-200 hover:border-cyan-500/60 hover:bg-slate-800/80';
+        let letterStyle = 'bg-slate-800 text-slate-300 border-slate-700';
+
+        if (drill.answered) {
+          if (idx === q.correctIndex) {
+            btnStyle = 'bg-emerald-950/70 border-emerald-400 text-emerald-100';
+            letterStyle = 'bg-emerald-500 text-slate-950 border-emerald-400';
+          } else if (idx === drill.selectedOption && idx !== q.correctIndex) {
+            btnStyle = 'bg-rose-950/70 border-rose-400 text-rose-100';
+            letterStyle = 'bg-rose-500 text-slate-950 border-rose-400';
+          } else {
+            btnStyle = 'bg-slate-900/50 border-slate-800 text-slate-400 opacity-75';
+          }
+        }
+
+        const letter = ['A', 'B', 'C', 'D'][idx] || '?';
+        return `
+          <button type="button" ${drill.answered ? 'disabled' : ''} onclick="submitDrillAnswer(${idx}, false)"
+            class="w-full text-left p-3.5 rounded-2xl border ${btnStyle} transition-all flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg border ${letterStyle} text-xs font-extrabold flex items-center justify-center shrink-0 mt-0.5">${letter}</span>
+            <span class="text-xs sm:text-sm leading-relaxed font-medium">${escapeHTML(optText)}</span>
+          </button>`;
+      }).join('');
+
+      const feedbackHtml = drill.answered ? (() => {
+        const last = drill.results[drill.results.length - 1];
+        const statusTitle = last.timedOut
+          ? '⏱️ Time Expired!'
+          : last.isCorrect
+            ? '✅ Strong Technical Answer!'
+            : '❌ Review Engineering Rationale';
+        const statusColor = last.isCorrect
+          ? 'border-emerald-500/40 bg-emerald-950/35 text-emerald-200'
+          : 'border-amber-500/40 bg-amber-950/35 text-amber-200';
+
+        return `
+          <div class="rounded-2xl border ${statusColor} p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-extrabold">${statusTitle}</h4>
+              <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-950/60 text-cyan-300">+${drill.xpEarned > 0 ? (last.isCorrect ? (25 + (q.isScenario ? 10 : 0) + Math.max(0, Math.round((drill.secondsLeft / drill.maxSeconds) * 15))) : 5) : 5} XP</span>
+            </div>
+            <p class="text-xs leading-relaxed text-slate-200">${escapeHTML(q.explanation)}</p>
+            <button type="button" onclick="nextDrillQuestion()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg transition-all">
+              ${drill.index + 1 < total ? 'Next Question →' : 'View Interview Scorecard →'}
+            </button>
+          </div>`;
+      })() : '';
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Drill Top Bar -->
+          <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-cyan-400 truncate">${escapeHTML(drill.title)}</p>
+                <p class="text-xs font-semibold text-slate-300">Question ${drill.index + 1} of ${total}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span id="drill-timer-badge" class="px-2.5 py-1 rounded-xl border text-xs font-extrabold tabular-nums text-cyan-300 bg-cyan-500/15 border-cyan-500/30">${drill.secondsLeft}s</span>
+                <button type="button" onclick="navigate('home')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">Exit</button>
+              </div>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="drill-timer-bar" class="h-full bg-cyan-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>Session Progress: ${progressPct}%</span>
+              <span>Score: <strong class="text-emerald-400">${drill.correctCount}/${drill.index + (drill.answered ? 1 : 0)}</strong></span>
+            </div>
+          </div>
+
+          <!-- Question Card -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${q.moduleCategory === 'core' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-teal-500/15 text-teal-300 border border-teal-500/30'}">
+                ${q.moduleCategory === 'core' ? 'Core Mech' : 'EV Systems'}
+              </span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                Mod ${q.moduleNum}: ${escapeHTML(q.moduleTitle)}
+              </span>
+              ${q.isScenario ? '<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">Scenario / Cross</span>' : ''}
+            </div>
+
+            <h2 class="text-sm sm:text-base font-bold text-white leading-snug">${escapeHTML(q.prompt)}</h2>
+          </div>
+
+          <!-- Options List -->
+          <div class="space-y-2.5">${optionsHtml}</div>
+
+          <!-- Explanation / Next -->
+          ${feedbackHtml}
+        </div>`;
+
+      updateTimerVisuals();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderDrillScorecard() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const total = drill.results.length || 1;
+      const accuracy = Math.round((drill.correctCount / total) * 100);
+
+      // Breakdown across Core Mech, EV Systems, and Cross/Case
+      const calcBreakdown = (predicate) => {
+        const subset = drill.results.filter(r => predicate(r.q));
+        if (subset.length === 0) return { right: 0, total: 0, pct: 0 };
+        const right = subset.filter(r => r.isCorrect).length;
+        return { right, total: subset.length, pct: Math.round((right / subset.length) * 100) };
+      };
+
+      const coreStat = calcBreakdown(q => q.moduleCategory === 'core');
+      const evStat = calcBreakdown(q => q.moduleCategory === 'ev');
+      const caseStat = calcBreakdown(q => Boolean(q.isScenario));
+
+      const reviewItemsHtml = drill.results.map((item, idx) => `
+        <div class="p-3 rounded-xl bg-slate-950/70 border ${item.isCorrect ? 'border-emerald-500/30' : 'border-rose-500/30'} space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold text-slate-400">Q${idx + 1} · Mod ${item.q.moduleNum} ${item.q.isScenario ? '· Scenario' : ''}</span>
+            <span class="text-[11px] font-extrabold ${item.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${item.timedOut ? 'Timed Out' : item.isCorrect ? 'Correct' : 'Missed'}</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-100">${escapeHTML(item.q.prompt)}</p>
+          <p class="text-[11px] text-slate-400 leading-relaxed"><strong class="text-cyan-300">Key Takeaway:</strong> ${escapeHTML(item.q.explanation)}</p>
+        </div>`).join('');
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/30 p-5 text-center space-y-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-cyan-300">${escapeHTML(drill.title)} Complete</p>
+            <div class="text-4xl font-extrabold text-white">${accuracy}%</div>
+            <p class="text-xs text-slate-300">You answered <strong class="text-emerald-400">${drill.correctCount}</strong> of <strong>${drill.results.length}</strong> questions accurately · Earned <strong class="text-amber-300">+${drill.xpEarned} XP</strong> (Speed Bonus: +${drill.timeBonusEarned} XP)</p>
+          </div>
+
+          <!-- Domain & Scenario Breakdown -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3 text-center">
+              <p class="text-[10px] font-bold uppercase text-indigo-300">Core Mech</p>
+              <p class="text-lg font-extrabold text-white mt-0.5">${coreStat.total ? `${coreStat.pct}%` : '—'}</p>
+              <p class="text-[10px] text-slate-400">${coreStat.right}/${coreStat.total}</p>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3 text-center">
+              <p class="text-[10px] font-bold uppercase text-teal-300">EV Systems</p>
+              <p class="text-lg font-extrabold text-white mt-0.5">${evStat.total ? `${evStat.pct}%` : '—'}</p>
+              <p class="text-[10px] text-slate-400">${evStat.right}/${evStat.total}</p>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3 text-center">
+              <p class="text-[10px] font-bold uppercase text-amber-300">Cross / Case</p>
+              <p class="text-lg font-extrabold text-white mt-0.5">${caseStat.total ? `${caseStat.pct}%` : '—'}</p>
+              <p class="text-[10px] text-slate-400">${caseStat.right}/${caseStat.total}</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" onclick="startBalancedMock()" class="py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm">
+              New 12-Q Mock
+            </button>
+            <button type="button" onclick="navigate('modules')" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm">
+              Back to Modules
+            </button>
+          </div>
+
+          <!-- Question Review -->
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-2.5">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">Post-Drill Technical Review</h3>
+            <div class="space-y-2">${reviewItemsHtml}</div>
+          </div>
+        </div>`;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 7. VIEW RENDERERS (HOME, MODULES, MODULE DETAIL, LABS)
+    // =========================================================================
+    let selectedModuleFilter = 'all'; // 'all' | 'core' | 'ev'
+
+    function navigate(viewName, moduleId = null) {
+      try {
+        stopDrillTimer();
+        if (viewName === 'home') {
+          setActiveNavTab('home');
+          renderHomeView();
+        } else if (viewName === 'modules') {
+          setActiveNavTab('modules');
+          renderModulesListView();
+        } else if (viewName === 'module-detail') {
+          setActiveNavTab('modules');
+          renderModuleDetailView(moduleId);
+        } else if (viewName === 'labs') {
+          setActiveNavTab('labs');
+          renderVisualLabsView();
+        } else {
+          setActiveNavTab('home');
+          renderHomeView();
+        }
+      } catch (err) {
+        showGlobalError(err && err.message ? err.message : 'Navigation error caught.');
+      }
+    }
+
+    function renderHomeView() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const allQ = getAllQuestions();
+      const solvedCount = Object.values(appState.solvedQuestions).filter(v => v && v.correct).length;
+      const readiness = calculateReadinessScore();
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Hero Card -->
+          <section class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/50 border border-cyan-500/30 p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                Mechanical → EV Interview Prep
+              </span>
+              <span class="text-xs font-bold text-emerald-400">${readiness}% Ready</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-white leading-snug">
+              Master Core Mechanics &amp; EV Systems Before Your Next Technical Round
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              8 engineering modules, 40 timed interview questions, interactive schematic labs, and multi-disciplinary failure scenarios built for Mechanical Engineering freshers.
+            </p>
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              <button type="button" onclick="startBalancedMock()" class="py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg transition-all">
+                Start 12-Q Mock
+              </button>
+              <button type="button" onclick="startScenarioDrill()" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-500/40 text-amber-300 font-bold text-xs sm:text-sm transition-all">
+                Scenario Drill (50s)
+              </button>
+            </div>
+          </section>
+
+          <!-- Quick Stats Row -->
+          <section class="grid grid-cols-3 gap-2.5">
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3">
+              <p class="text-[10px] font-bold uppercase text-slate-400">Questions Mastered</p>
+              <p class="text-lg font-extrabold text-cyan-300 mt-0.5">${solvedCount}<span class="text-xs text-slate-500 font-semibold">/${allQ.length}</span></p>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3">
+              <p class="text-[10px] font-bold uppercase text-slate-400">Notes Reviewed</p>
+              <p class="text-lg font-extrabold text-emerald-300 mt-0.5">${appState.completedNotes.length}<span class="text-xs text-slate-500 font-semibold">/${MODULES.length}</span></p>
+            </div>
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-3">
+              <p class="text-[10px] font-bold uppercase text-slate-400">Best Streak</p>
+              <p class="text-lg font-extrabold text-amber-300 mt-0.5">${appState.bestStreak}</p>
+            </div>
+          </section>
+
+          <!-- Quick Mode Cards -->
+          <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" onclick="navigate('modules')" class="text-left rounded-2xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 p-4 transition-all space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-indigo-300 uppercase">01–08 Modules</span>
+                <span class="text-xs text-cyan-400 font-bold">Explore →</span>
+              </div>
+              <p class="text-sm font-bold text-white">Study Notes, Schematics &amp; Drills</p>
+              <p class="text-xs text-slate-400">4 Core Mechanical + 4 EV Systems modules with equations &amp; cross-domain bridges.</p>
+            </button>
+
+            <button type="button" onclick="navigate('labs')" class="text-left rounded-2xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 p-4 transition-all space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-teal-300 uppercase">Visual Labs</span>
+                <span class="text-xs text-cyan-400 font-bold">Open Labs →</span>
+              </div>
+              <p class="text-sm font-bold text-white">8 SVG Schematics &amp; Live Calculators</p>
+              <p class="text-xs text-slate-400">Tune FoS, coolant ΔT, bearing L10, TIM stack-up, road load, CTP density, I²R heat &amp; mesh Hz.</p>
+            </button>
+          </section>
+
+          <!-- Verified Reference Links -->
+          <section class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">Verified Engineering References</h3>
+              <button type="button" onclick="requestResetProgress()" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300">Reset Progress</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${Object.values(VERIFIED_LINKS).slice(0, 6).map(link => `
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800/90 text-xs transition-colors">
+                  <span class="font-medium text-cyan-300 truncate">${escapeHTML(link.title)}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 shrink-0">${escapeHTML(link.badge)}</span>
+                </a>`).join('')}
+            </div>
+          </section>
+        </div>`;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterModules(filterKey) {
+      selectedModuleFilter = filterKey;
+      renderModulesListView();
+    }
+
+    function renderModulesListView() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const filtered = MODULES.filter(m => {
+        if (selectedModuleFilter === 'all') return true;
+        return m.category === selectedModuleFilter;
+      });
+
+      const tabCls = (key) => selectedModuleFilter === key
+        ? 'px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-extrabold text-xs'
+        : 'px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white font-semibold text-xs';
+
+      const cardsHtml = filtered.map(mod => {
+        const solvedInMod = mod.questions.filter(q => appState.solvedQuestions[q.id]?.correct).length;
+        const noteDone = appState.completedNotes.includes(mod.id);
+        return `
+          <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-extrabold text-cyan-400">MOD ${mod.num}</span>
+                  <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${mod.category === 'core' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-teal-500/15 text-teal-300 border border-teal-500/30'}">${mod.categoryLabel}</span>
+                  ${noteDone ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300">✓ Notes Read</span>' : ''}
+                </div>
+                <h3 class="text-sm sm:text-base font-bold text-white leading-snug">${escapeHTML(mod.title)}</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">${escapeHTML(mod.subtitle)}</p>
+              </div>
+              <span class="text-xs font-bold text-slate-300 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 shrink-0">${solvedInMod}/${mod.questions.length}</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button type="button" onclick="navigate('module-detail', '${mod.id}')" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors">
+                Study &amp; Lab
+              </button>
+              <button type="button" onclick="startModuleDrill('${mod.id}')" class="py-2 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-extrabold text-xs transition-colors">
+                5-Q Timed Drill (45s)
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">8 Engineering Modules</h2>
+              <p class="text-xs text-slate-400">4 Core Mechanical + 4 EV Systems with live labs &amp; drills</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="filterModules('all')" class="${tabCls('all')}">All (8)</button>
+              <button type="button" onclick="filterModules('core')" class="${tabCls('core')}">Core (4)</button>
+              <button type="button" onclick="filterModules('ev')" class="${tabCls('ev')}">EV (4)</button>
+            </div>
+          </div>
+          <div class="space-y-3">${cardsHtml}</div>
+        </div>`;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function markNoteCompleted(moduleId) {
+      if (!appState.completedNotes.includes(moduleId)) {
+        appState.completedNotes.push(moduleId);
+        appState.xp += 20;
+        persistState();
+      }
+      renderModuleDetailView(moduleId);
+    }
+
+    function renderModuleDetailView(moduleId) {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const mod = MODULES.find(m => m.id === moduleId) || MODULES[0];
+      const isCompleted = appState.completedNotes.includes(mod.id);
+
+      const eqHtml = mod.equations.map(eq => `
+        <div class="p-2.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-cyan-300">${escapeHTML(eq.label)}</p>
+          <p class="text-xs font-mono text-slate-100 break-words">${escapeHTML(eq.formula)}</p>
+        </div>`).join('');
+
+      const linksHtml = mod.links.map(lk => `
+        <a href="${lk.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-xs transition-colors">
+          <span class="font-medium text-cyan-300 truncate">${escapeHTML(lk.title)}</span>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 shrink-0">${escapeHTML(lk.badge)}</span>
+        </a>`).join('');
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" onclick="navigate('modules')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-200">
+              ← All Modules
+            </button>
+            <button type="button" onclick="startModuleDrill('${mod.id}')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-extrabold text-xs">
+              Start 5-Q Drill →
+            </button>
+          </div>
+
+          <section class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold text-cyan-400">MODULE ${mod.num}</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${mod.category === 'core' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-teal-500/15 text-teal-300 border border-teal-500/30'}">${mod.categoryLabel}</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-white leading-snug">${escapeHTML(mod.title)}</h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${escapeHTML(mod.overview)}</p>
+
+            <div class="space-y-2 pt-1">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Key Equations &amp; Parameters</h3>
+              <div class="space-y-2">${eqHtml}</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1">
+              <p class="text-[11px] font-extrabold uppercase tracking-wider text-amber-300">Interviewer’s Lens</p>
+              <p class="text-xs text-amber-100/90 leading-relaxed">${escapeHTML(mod.interviewerTip)}</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 space-y-1">
+              <p class="text-[11px] font-extrabold uppercase tracking-wider text-cyan-300">Cross-Disciplinary Systems Bridge</p>
+              <p class="text-xs text-cyan-100/90 leading-relaxed">${escapeHTML(mod.crossBridge)}</p>
+            </div>
+
+            <div class="pt-1 flex items-center justify-between gap-2">
+              ${isCompleted
+                ? '<span class="text-xs font-bold text-emerald-400">✓ Study Note Completed (+20 XP awarded)</span>'
+                : `<button type="button" onclick="markNoteCompleted('${mod.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-extrabold text-xs">Mark Note Complete (+20 XP)</button>`}
+            </div>
+          </section>
+
+          <!-- Schematic + Interactive Lab -->
+          <section class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-cyan-300">Blueprint Schematic &amp; Interactive Lab</h3>
+            ${getModuleSchematicSVG(mod.labId)}
+            ${getInteractiveLabHTML(mod.labId)}
+          </section>
+
+          <!-- Curated Links -->
+          <section class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-2.5">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">Further Learning Links</h3>
+            <div class="space-y-2">${linksHtml}</div>
+          </section>
+        </div>`;
+
+      syncAllActiveLabs();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderVisualLabsView() {
+      const container = document.getElementById('main-content');
+      if (!container) return;
+
+      const labCards = MODULES.map(mod => `
+        <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase text-cyan-400">MOD ${mod.num} · ${escapeHTML(mod.categoryLabel)}</span>
+              <h3 class="text-sm font-bold text-white">${escapeHTML(mod.shortTitle)}</h3>
+            </div>
+            <button type="button" onclick="navigate('module-detail', '${mod.id}')" class="text-xs font-bold text-cyan-300 hover:underline shrink-0">Notes →</button>
+          </div>
+          ${getModuleSchematicSVG(mod.labId)}
+          ${getInteractiveLabHTML(mod.labId)}
+        </div>`).join('');
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-4">
+            <h2 class="text-base sm:text-lg font-extrabold text-white">Visual Labs — All 8 Schematics &amp; Calculators</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Adjust sliders live to see how mechanical, thermal, tribological, and EV parameters shift.</p>
+          </div>
+          <div class="space-y-3">${labCards}</div>
+        </div>`;
+
+      syncAllActiveLabs();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 8. HTML ESCAPING & BOOTSTRAP INITIALIZATION
+    // =========================================================================
+    function escapeHTML(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function bootApplication() {
+      try {
+        appState = loadPersistedState();
+        updateTopHeader();
+        navigate('home');
+      } catch (err) {
+        showGlobalError(err && err.message ? err.message : 'Initialization issue recovered.');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootApplication);
+    } else {
+      bootApplication();
+    }
+  </script>
+</body>
+</html>
